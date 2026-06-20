@@ -1,0 +1,1818 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>旅途无忧 (VoyageEase) - 智能旅游规划应用</title>
+    
+    <!-- ================= PWA & iOS WebApp Meta 标签 ================= -->
+    <!-- 允许 Web 应用以全屏模式运行 (iOS) -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <!-- 状态栏外观：透明、黑底、或白色。半透明最适合沉浸式设计 -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- 添加到桌面后的应用名称 -->
+    <meta name="apple-mobile-web-app-title" content="旅途无忧">
+    <!-- App 在手机桌面显示的图标 (Apple Touch Icon) -->
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/201/201623.png">
+    
+    <!-- Chrome / Android PWA Web Manifest (内联 Data URI 确保单文件运行) -->
+    <link rel="manifest" href='data:application/manifest+json,{"name":"旅途无忧 VoyageEase","short_name":"旅途无忧","start_url":".","display":"standalone","background_color":"#0f172a","theme_color":"#0f172a","description":"智能旅途规划助手","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/201/201623.png","sizes":"512x512","type":"image/png"}]}'>
+    <meta name="theme-color" content="#0f172a">
+
+    <!-- 引入 Tailwind CSS 进行现代响应式排版 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts Inter 字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            /* 完美适配 iOS 刘海屏与底部分页指示器 */
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        /* 隐藏滚动条 */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col pb-20 md:pb-0 md:flex-row">
+
+    <!-- 侧边导航栏 (桌面端) -->
+    <aside class="hidden md:flex flex-col w-64 bg-slate-900 text-white min-h-screen p-5 shadow-xl shrink-0">
+        <div class="flex items-center space-x-3 mb-8 px-2">
+            <!-- 飞机Logo SVG -->
+            <svg class="w-8 h-8 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+            </svg>
+            <div>
+                <h1 class="font-bold text-lg tracking-wide bg-gradient-to-r from-teal-400 to-emerald-400 bg-clip-text text-transparent">VoyageEase</h1>
+                <p class="text-xs text-slate-400">智能旅途规划助手</p>
+            </div>
+        </div>
+
+        <nav class="flex-1 space-y-1">
+            <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition duration-200 hover:bg-slate-800 text-teal-400 bg-slate-800/80">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z"></path></svg>
+                <span class="font-medium">我的仪表盘</span>
+            </button>
+            <button onclick="switchTab('itinerary')" id="nav-itinerary" class="nav-item w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition duration-200 hover:bg-slate-800 text-slate-300">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                <span class="font-medium">行程规划</span>
+            </button>
+            <button onclick="switchTab('exchange')" id="nav-exchange" class="nav-item w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition duration-200 hover:bg-slate-800 text-slate-300">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span class="font-medium">汇率助手</span>
+            </button>
+            <button onclick="switchTab('weather')" id="nav-weather" class="nav-item w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition duration-200 hover:bg-slate-800 text-slate-300">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path></svg>
+                <span class="font-medium">天气查询</span>
+            </button>
+        </nav>
+
+        <!-- 桌面侧边栏安装说明按钮 -->
+        <button onclick="openPwaGuide()" class="mb-4 w-full flex items-center space-x-2 px-4 py-2.5 bg-teal-500/10 hover:bg-teal-500/20 text-teal-400 rounded-xl transition text-xs border border-teal-500/20">
+            <span>📲 添加到手机桌面 (WebApp)</span>
+        </button>
+
+        <!-- 底部个人卡片 -->
+        <div class="border-t border-slate-800 pt-4 flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-full bg-teal-500 flex items-center justify-center font-bold text-white text-lg">
+                G
+            </div>
+            <div>
+                <p class="text-sm font-semibold">旅行家极客</p>
+                <p class="text-xs text-slate-400">Voyage V2 账号</p>
+            </div>
+        </div>
+    </aside>
+
+    <!-- 移动端底部导航栏 (加高并针对 iOS 底部横条避让) -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 flex justify-around py-3 px-1 z-50 shadow-lg text-white pb-[calc(12px+env(safe-area-inset-bottom))]">
+        <button onclick="switchTab('dashboard')" id="mob-dashboard" class="flex flex-col items-center space-y-0.5 text-teal-400">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z"></path></svg>
+            <span class="text-[10px] font-medium">仪表盘</span>
+        </button>
+        <button onclick="switchTab('itinerary')" id="mob-itinerary" class="flex flex-col items-center space-y-0.5 text-slate-400">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+            <span class="text-[10px] font-medium">行程</span>
+        </button>
+        <button onclick="switchTab('exchange')" id="mob-exchange" class="flex flex-col items-center space-y-0.5 text-slate-400">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <span class="text-[10px] font-medium">汇率</span>
+        </button>
+        <button onclick="switchTab('weather')" id="mob-weather" class="flex flex-col items-center space-y-0.5 text-slate-400">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path></svg>
+            <span class="text-[10px] font-medium">天气</span>
+        </button>
+    </nav>
+
+    <!-- 主展示面板 -->
+    <main class="flex-1 flex flex-col min-h-screen overflow-y-auto bg-slate-50 relative pb-10">
+        
+        <header class="bg-white border-b border-slate-200 px-6 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-3 sm:space-y-0">
+            <div>
+                <p class="text-xs text-slate-400 font-medium uppercase tracking-wider">VoyageEase Smart WebApp</p>
+                <h2 id="header-title" class="text-2xl font-bold text-slate-800">当前旅途</h2>
+            </div>
+            <!-- 行程切换器与修改入口 -->
+            <div class="flex items-center space-x-2 w-full sm:w-auto">
+                <select id="trip-selector" onchange="changeCurrentTrip(this.value)" class="bg-slate-100 text-slate-800 border-0 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-teal-500 outline-none font-medium cursor-pointer w-full sm:w-56 text-sm">
+                    <!-- 动态生成 -->
+                </select>
+                <!-- 新建旅途按钮 -->
+                <button onclick="openNewTripModal()" class="bg-teal-500 hover:bg-teal-600 text-white font-medium p-2.5 rounded-xl transition shadow-lg shadow-teal-500/10 shrink-0" title="新建旅途">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                </button>
+                <!-- 修改旅途基本信息按钮 -->
+                <button onclick="openEditTripModal()" class="bg-indigo-500 hover:bg-indigo-600 text-white font-medium p-2.5 rounded-xl transition shadow-lg shadow-indigo-500/10 shrink-0" title="修改当前旅途基本信息">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                </button>
+                <!-- 手机端引导安装 WebApp 按钮 -->
+                <button onclick="openPwaGuide()" class="md:hidden bg-amber-500 hover:bg-amber-600 text-white font-medium p-2.5 rounded-xl transition shadow-lg shrink-0" title="如何保存到桌面">
+                    📲
+                </button>
+            </div>
+        </header>
+
+        <div id="toast-container" class="fixed top-5 right-5 z-50 pointer-events-none transition-all duration-300"></div>
+
+        <!-- 仪表盘面板 -->
+        <section id="tab-dashboard-view" class="p-6 space-y-6">
+            <!-- 手机端便捷提示横幅 -->
+            <div id="pwa-mobile-banner" class="bg-slate-900 text-white p-4 rounded-2xl flex items-center justify-between shadow-lg border border-slate-800">
+                <div class="flex items-center space-x-3">
+                    <span class="text-2xl">📱</span>
+                    <div>
+                        <h4 class="text-sm font-bold">添加到主屏幕获得原生 App 体验</h4>
+                        <p class="text-xs text-slate-400">无网址栏，启动极速，离线查看行程</p>
+                    </div>
+                </div>
+                <button onclick="openPwaGuide()" class="bg-teal-500 hover:bg-teal-600 text-slate-950 font-bold px-3 py-1.5 rounded-xl text-xs transition shrink-0">
+                    去添加
+                </button>
+            </div>
+
+            <!-- 头部概览卡片 -->
+            <div class="relative overflow-hidden bg-gradient-to-r from-teal-500 to-emerald-600 rounded-2xl text-white p-6 shadow-xl shadow-teal-500/10">
+                <div class="absolute right-0 bottom-0 opacity-10 pointer-events-none transform translate-x-10 translate-y-10">
+                    <svg class="w-80 h-80" fill="currentColor" viewBox="0 0 24 24"><path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                </div>
+                <div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center">
+                    <div>
+                        <span class="inline-block bg-teal-400/30 text-teal-100 text-xs font-semibold px-2.5 py-1 rounded-full mb-2">正在筹备中</span>
+                        <h3 id="dash-trip-name" class="text-2xl font-bold mb-1">加载中...</h3>
+                        <p id="dash-trip-dates" class="text-teal-100 text-sm">----年--月--日 - ----年--月--日</p>
+                    </div>
+                    <div class="mt-4 md:mt-0 bg-white/15 backdrop-blur-md rounded-xl p-4 text-center border border-white/10 min-w-[120px]">
+                        <p class="text-xs text-teal-200">出发倒计时</p>
+                        <p id="dash-countdown" class="text-3xl font-extrabold text-white mt-1">--</p>
+                        <p class="text-[10px] text-teal-100 mt-0.5">天</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 数据总览网格 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- 预估费用 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="p-3 bg-rose-50 rounded-xl text-rose-500">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        </div>
+                        <span class="text-xs text-slate-400">旅行总预算</span>
+                    </div>
+                    <p class="text-xs text-slate-500 font-medium">当前已花费 / 预算额度</p>
+                    <div class="flex items-baseline space-x-1 mt-1 mb-3">
+                        <span id="dash-spent" class="text-2xl font-bold text-slate-800">¥ 0</span>
+                        <span class="text-slate-400 text-sm">/</span>
+                        <span id="dash-budget" class="text-slate-500 text-sm">¥ 0</span>
+                    </div>
+                    <!-- 进度条 -->
+                    <div class="w-full bg-slate-100 rounded-full h-2">
+                        <div id="dash-budget-progress" class="bg-teal-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- 气温和天气速览 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="p-3 bg-blue-50 rounded-xl text-blue-500">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path></svg>
+                        </div>
+                        <span class="text-xs text-slate-400">目的地天气</span>
+                    </div>
+                    <p class="text-xs text-slate-500 font-medium">当前目的地 · <span id="dash-city-name" class="font-bold">加载中...</span></p>
+                    <div class="flex items-center space-x-3 mt-1">
+                        <span id="dash-weather-temp" class="text-2xl font-bold text-slate-800">--°C</span>
+                        <div class="flex items-center space-x-1 bg-slate-100 px-2 py-0.5 rounded-md">
+                            <span id="dash-weather-icon" class="text-base">☀️</span>
+                            <span id="dash-weather-desc" class="text-xs text-slate-600">晴</span>
+                        </div>
+                    </div>
+                    <button onclick="switchTab('weather')" class="text-xs text-teal-500 hover:text-teal-600 font-medium mt-3 inline-flex items-center space-x-1">
+                        <span>查看7天趋势与打包指南</span>
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    </button>
+                </div>
+
+                <!-- 常用汇率面板 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="p-3 bg-indigo-50 rounded-xl text-indigo-500">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                        <span class="text-xs text-slate-400">推荐汇率</span>
+                    </div>
+                    <div class="space-y-2 mt-1">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-500">1 人民币 (CNY)</span>
+                            <span id="dash-rate-usd" class="font-semibold text-slate-700">-- USD</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-500">1 人民币 (CNY)</span>
+                            <span id="dash-rate-jpy" class="font-semibold text-slate-700">-- JPY</span>
+                        </div>
+                    </div>
+                    <button onclick="switchTab('exchange')" class="text-xs text-teal-500 hover:text-teal-600 font-medium mt-3 inline-flex items-center space-x-1">
+                        <span>打开计算器</span>
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 今日行程预览 -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                <div class="flex justify-between items-center mb-4">
+                    <h4 class="font-bold text-slate-800 text-lg">首日行程预览</h4>
+                    <button onclick="switchTab('itinerary')" class="text-xs text-teal-500 hover:text-teal-600 font-semibold inline-flex items-center space-x-1">
+                        <span>编辑完整日程</span>
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    </button>
+                </div>
+                <!-- 每日行程节点展示 -->
+                <div id="dash-today-events" class="space-y-4 relative before:absolute before:bottom-2 before:top-2 before:left-[15px] before:w-[2px] before:bg-slate-100">
+                    <!-- 动态生成首日活动节点 -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 行程规划页面 -->
+        <section id="tab-itinerary-view" class="p-6 space-y-6 hidden">
+            <!-- 行程预算总览 & 功能按钮 -->
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-5 rounded-2xl border border-slate-100 shadow-sm gap-4">
+                <div class="flex flex-wrap gap-4 sm:gap-6">
+                    <div>
+                        <p class="text-xs text-slate-400">总天数</p>
+                        <p id="itin-stat-days" class="text-xl font-bold text-slate-800">0 天</p>
+                    </div>
+                    <div class="h-10 w-[1px] bg-slate-200 self-center hidden sm:block"></div>
+                    <div>
+                        <p class="text-xs text-slate-400">规划总花费</p>
+                        <p id="itin-stat-spent" class="text-xl font-bold text-rose-500">¥ 0</p>
+                    </div>
+                    <div class="h-10 w-[1px] bg-slate-200 self-center hidden sm:block"></div>
+                    <div>
+                        <p class="text-xs text-slate-400">主要开支占比最高</p>
+                        <p id="itin-stat-category" class="text-sm font-semibold text-teal-600 bg-teal-50 px-2.5 py-1 rounded-lg mt-0.5">无数据</p>
+                    </div>
+                </div>
+                <div class="flex space-x-2 w-full sm:w-auto">
+                    <button onclick="openActivityModal()" class="flex-1 sm:flex-none bg-teal-500 hover:bg-teal-600 text-white font-medium px-4 py-2.5 rounded-xl transition shadow-lg shadow-teal-500/15 flex items-center justify-center space-x-2 text-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                        <span>添加活动地点</span>
+                    </button>
+                    <button onclick="deleteCurrentTrip()" class="bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-100 font-medium px-4 py-2.5 rounded-xl transition flex items-center justify-center space-x-1 text-sm" title="删除整个行程">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        <span class="hidden sm:inline">删除行程</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 5天/多天行程 Journey 导航条 (Stepper Bar) -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Journey Day-by-Day 步进导航</p>
+                
+                <!-- 步进轨道容器 -->
+                <div class="relative flex items-center justify-between overflow-x-auto no-scrollbar pb-3 pt-2">
+                    <!-- 背景灰色连接线条 -->
+                    <div class="absolute top-[28px] left-6 right-6 h-[3px] bg-slate-100 -z-0"></div>
+                    <!-- 动态高亮进度条 -->
+                    <div id="itin-nav-progress" class="absolute top-[28px] left-6 h-[3px] bg-gradient-to-r from-teal-500 to-emerald-500 transition-all duration-300 -z-0" style="width: 0%"></div>
+                    
+                    <!-- 动态渲染 5个/多个日程节点 -->
+                    <div id="itin-nav-steps-container" class="w-full flex justify-between items-center z-10 min-w-[650px]">
+                        <!-- 动态生成的 Day Stepper 元素 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 主页面布局：左侧足迹地图与地点展示，右侧当日日程详情 -->
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <!-- 左侧：行程足迹地图与打卡地点展示 -->
+                <div class="lg:col-span-1 bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-5 flex flex-col justify-between h-fit">
+                    <div>
+                        <div class="flex items-center space-x-2 border-b border-slate-100 pb-3 mb-3">
+                            <span class="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                            </span>
+                            <div>
+                                <h4 class="font-bold text-slate-800 text-sm">行程足迹与地点</h4>
+                                <p class="text-[10px] text-slate-400">该旅途所有打卡地点串联</p>
+                            </div>
+                        </div>
+
+                        <!-- 智能足迹卡片列表 -->
+                        <div id="itin-locations-list" class="space-y-3 max-h-[220px] overflow-y-auto pr-1 no-scrollbar">
+                            <!-- 动态生成打卡地址节点 -->
+                        </div>
+                    </div>
+
+                    <!-- 模拟 SVG 路线地图 -->
+                    <div class="bg-slate-50 border border-slate-100 rounded-xl p-3 flex flex-col items-center">
+                        <span class="text-xs font-bold text-slate-500 mb-2">智能穿梭路线图</span>
+                        <div class="relative w-full h-32 flex items-center justify-center">
+                            <!-- 动态SVG线 -->
+                            <svg id="route-svg-line" class="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
+                                <!-- 连线将在JS中渲染 -->
+                            </svg>
+                        </div>
+                        <span class="text-[10px] text-slate-400 mt-2 text-center">系统已为您自动规划最优往返通勤线路</span>
+                    </div>
+                </div>
+
+                <!-- 右侧：当前天数的日程详情 -->
+                <div class="lg:col-span-3 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h3 id="itin-current-day-title" class="text-lg font-bold text-slate-800">Day 1 行程</h3>
+                            <p id="itin-current-day-date" class="text-xs text-slate-400 mt-0.5">日期: ----年--月--日</p>
+                        </div>
+                        <span id="itin-current-day-budget" class="text-sm font-semibold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">当天消费: ¥0</span>
+                    </div>
+
+                    <!-- 日程流 -->
+                    <div id="itin-events-list" class="space-y-6 relative before:absolute before:bottom-2 before:top-2 before:left-[17px] before:w-[2px] before:bg-slate-100">
+                        <!-- 动态生成当天的活动时间轴卡片 -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 汇率助手面板 -->
+        <section id="tab-exchange-view" class="p-6 space-y-6 hidden">
+            <!-- 汇率计算器卡片 -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                <h3 class="text-lg font-bold text-slate-800 mb-6 flex items-center space-x-2">
+                    <span class="p-2 bg-teal-50 text-teal-600 rounded-lg">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                    </span>
+                    <span>出境汇率转换器</span>
+                </h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-7 gap-4 items-center">
+                    <!-- 持有/输入货币 -->
+                    <div class="md:col-span-3 space-y-1.5">
+                        <label class="text-xs text-slate-400 font-medium">持有货币 (从)</label>
+                        <div class="relative flex">
+                            <select id="exc-from-currency" onchange="convertCurrency()" class="bg-slate-50 border border-slate-200 rounded-l-xl px-3 py-3 text-slate-700 font-semibold outline-none focus:border-teal-500 text-sm">
+                                <option value="CNY" selected>CNY - 人民币</option>
+                                <option value="USD">USD - 美元</option>
+                                <option value="EUR">EUR - 欧元</option>
+                                <option value="JPY">JPY - 日元</option>
+                                <option value="KRW">KRW - 韩元</option>
+                                <option value="GBP">GBP - 英镑</option>
+                            </select>
+                            <input type="number" id="exc-from-amount" value="100" oninput="convertCurrency()" class="flex-1 bg-slate-50 border border-l-0 border-slate-200 rounded-r-xl px-4 py-3 text-lg font-bold outline-none focus:ring-1 focus:ring-teal-500 text-slate-800" placeholder="请输入金额">
+                        </div>
+                    </div>
+
+                    <!-- 交换按钮 -->
+                    <div class="md:col-span-1 flex justify-center pt-5 md:pt-0">
+                        <button onclick="swapCurrencies()" class="bg-teal-50 hover:bg-teal-100 text-teal-600 p-3 rounded-full transition transform hover:rotate-180 duration-300">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+                        </button>
+                    </div>
+
+                    <!-- 目标货币 -->
+                    <div class="md:col-span-3 space-y-1.5">
+                        <label class="text-xs text-slate-400 font-medium">目标货币 (至)</label>
+                        <div class="relative flex">
+                            <select id="exc-to-currency" onchange="convertCurrency()" class="bg-slate-50 border border-slate-200 rounded-l-xl px-3 py-3 text-slate-700 font-semibold outline-none focus:border-teal-500 text-sm">
+                                <option value="CNY">CNY - 人民币</option>
+                                <option value="USD">USD - 美元</option>
+                                <option value="EUR">EUR - 欧元</option>
+                                <option value="JPY" selected>JPY - 日元</option>
+                                <option value="KRW">KRW - 韩元</option>
+                                <option value="GBP">GBP - 英镑</option>
+                            </select>
+                            <div id="exc-to-amount" class="flex-1 bg-slate-100 border border-l-0 border-slate-200 rounded-r-xl px-4 py-3 text-lg font-extrabold flex items-center text-slate-800">
+                                0.00
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 text-center">
+                    <p class="text-xs text-slate-400">
+                        基准汇率更新时间: 刚才 | 模拟实时银行外汇牌价 
+                    </p>
+                </div>
+            </div>
+
+            <!-- 汇率常识与常用兑换速查表 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- 常用速查对照表 (1/10/100/1000) -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                    <h4 class="font-bold text-slate-800 text-base mb-4">常用金额速查折算</h4>
+                    <div class="space-y-3">
+                        <div class="flex justify-between border-b border-slate-100 pb-2 text-sm text-slate-500 font-medium">
+                            <span>持有人民币 (CNY)</span>
+                            <span id="quick-convert-title">可折算成日元 (JPY)</span>
+                        </div>
+                        <div class="space-y-2" id="exc-quick-table">
+                            <!-- 动态加载速查值 -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 旅游换汇与消费贴士 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 space-y-4">
+                    <h4 class="font-bold text-slate-800 text-base">✈️ 目的地换汇及消费小贴士</h4>
+                    <div class="space-y-3">
+                        <div class="flex items-start space-x-3">
+                            <div class="mt-1 text-amber-500">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+                            </div>
+                            <div>
+                                <p class="text-sm font-semibold text-slate-700">避免在机场换汇</p>
+                                <p class="text-xs text-slate-500">机场换汇柜台的汇率手续费通常最高，建议提前在各大商业银行进行预约换汇，或到达市区后使用带有UnionPay标识的ATM取现。</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-3">
+                            <div class="mt-1 text-teal-500">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+                            </div>
+                            <div>
+                                <p class="text-sm font-semibold text-slate-700">多备无境外手刷消费卡</p>
+                                <p class="text-xs text-slate-500">双币信用卡（如Visa/Mastercard）在境外大部分商铺都适用，注意核实是否免除1.5%的境外交易币种转换费。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 天气助手面板 -->
+        <section id="tab-weather-view" class="p-6 space-y-6 hidden">
+            <!-- 天气快速检索栏 -->
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="flex items-center space-x-3 w-full md:w-auto">
+                    <div class="p-3 bg-blue-50 text-blue-500 rounded-xl">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-800">目的地天气查询</h3>
+                        <p class="text-xs text-slate-400">实时掌握温度与天气情况，提前备好行李</p>
+                    </div>
+                </div>
+                <div class="flex space-x-2 w-full md:w-96">
+                    <input type="text" id="weather-city-input" placeholder="输入你想查询的城市，例如：东京, 北京" class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-teal-500 text-slate-800 font-medium">
+                    <button onclick="searchCityWeather()" class="bg-teal-500 hover:bg-teal-600 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition shadow-lg shadow-teal-500/15">
+                        查询
+                    </button>
+                </div>
+            </div>
+
+            <!-- 当前天气及7天天气预报 -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- 实时天气大卡片 -->
+                <div class="lg:col-span-1 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl p-6 text-white shadow-xl shadow-blue-500/10 flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h4 id="wea-cur-city" class="text-2xl font-bold">北京</h4>
+                                <p class="text-blue-100 text-xs mt-1">今天, 2026年6月20日</p>
+                            </div>
+                            <span id="wea-cur-icon" class="text-5xl">☀️</span>
+                        </div>
+                        <div class="mt-8">
+                            <h2 id="wea-cur-temp" class="text-6xl font-extrabold tracking-tight">31°C</h2>
+                            <p id="wea-cur-desc" class="text-lg text-blue-100 font-semibold mt-1">晴空万里</p>
+                        </div>
+                    </div>
+
+                    <!-- 小指标 -->
+                    <div class="grid grid-cols-2 gap-4 border-t border-white/20 pt-4 mt-8">
+                        <div>
+                            <p class="text-blue-200 text-xs">湿度</p>
+                            <p id="wea-cur-humidity" class="font-bold text-base">38%</p>
+                        </div>
+                        <div>
+                            <p class="text-blue-200 text-xs">风向</p>
+                            <p id="wea-cur-wind" class="font-bold text-base">西北风 1级</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 7天预报柱状和卡片 -->
+                <div class="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col justify-between">
+                    <h4 class="font-bold text-slate-800 text-base mb-4">🔮 7天趋势天气预报</h4>
+                    <div id="wea-seven-days" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+                        <!-- 动态生成 7天 天气子卡片 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 智能打包建议指南 -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                <h4 class="font-bold text-slate-800 text-base mb-4 flex items-center space-x-2">
+                    <span>🧳 智能行李打包与出行贴士</span>
+                    <span class="text-xs bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full">AI 推荐</span>
+                </h4>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- 穿着指南 -->
+                    <div class="p-4 bg-slate-50 rounded-xl space-y-2">
+                        <div class="flex items-center space-x-2 font-semibold text-slate-700">
+                            <span class="text-lg">👕</span>
+                            <span>穿衣指南</span>
+                        </div>
+                        <p id="tip-clothing" class="text-xs text-slate-500 leading-relaxed">
+                            建议穿透气舒适的短袖、短裤或连衣裙。温差较大时可备一件轻薄防风外套。
+                        </p>
+                    </div>
+
+                    <!-- 携带必备 -->
+                    <div class="p-4 bg-slate-50 rounded-xl space-y-2">
+                        <div class="flex items-center space-x-2 font-semibold text-slate-700">
+                            <span class="text-lg">🌂</span>
+                            <span>必备物品</span>
+                        </div>
+                        <p id="tip-necessity" class="text-xs text-slate-500 leading-relaxed">
+                            天气晴朗，请务必准备好防晒霜（SPF50+）、太阳镜、遮阳帽，多补充水分，避免高温中暑。
+                        </p>
+                    </div>
+
+                    <!-- 活动适宜度 -->
+                    <div class="p-4 bg-slate-50 rounded-xl space-y-2">
+                        <div class="flex items-center space-x-2 font-semibold text-slate-700">
+                            <span class="text-lg">🏕️</span>
+                            <span>户外适宜度</span>
+                        </div>
+                        <p id="tip-activity" class="text-xs text-slate-500 leading-relaxed">
+                            非常适合户外拍照、登山、海滩漫步等活动。在正午太阳暴晒时段可选择室内美术馆等活动避暑。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- 模态框 0: WebApp 引导桌面保存弹窗 -->
+    <div id="modal-pwa-guide" class="fixed inset-0 bg-slate-900/60 flex items-center justify-center p-4 z-[60] hidden backdrop-blur-md">
+        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl transform scale-95 transition-all duration-300">
+            <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
+                <h3 class="text-lg font-bold text-slate-800 flex items-center space-x-2">
+                    <span>📲</span>
+                    <span>添加到主屏幕教程</span>
+                </h3>
+                <button onclick="closePwaGuide()" class="text-slate-400 hover:text-slate-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <div class="space-y-6">
+                <!-- 苹果 iOS 用户 -->
+                <div class="space-y-2.5">
+                    <div class="flex items-center space-x-2">
+                        <span class="bg-slate-100 text-slate-800 text-xs font-bold px-2 py-0.5 rounded">苹果 iOS 手机</span>
+                        <span class="text-xs text-slate-400">使用 Safari 浏览器</span>
+                    </div>
+                    <ol class="text-xs text-slate-600 space-y-2 pl-4 list-decimal leading-relaxed">
+                        <li>在手机上打开默认的 <strong class="text-teal-600">Safari 浏览器</strong> 访问本页面。</li>
+                        <li>点击浏览器底部的“<strong>分享</strong>”按钮（带有向上箭头的方框图标 <span class="bg-slate-100 px-1 py-0.5 rounded text-sm">⎋</span>）。</li>
+                        <li>在弹出的分享菜单中向下滚动，找到并选择“<strong class="text-slate-900">添加到主屏幕</strong>”。</li>
+                        <li>点击右上角“<strong>添加</strong>”，大功告成！你就可以在手机桌面上直接点击打开了。</li>
+                    </ol>
+                </div>
+
+                <hr class="border-slate-100">
+
+                <!-- 安卓 Android 用户 -->
+                <div class="space-y-2.5">
+                    <div class="flex items-center space-x-2">
+                        <span class="bg-teal-500 text-white text-xs font-bold px-2 py-0.5 rounded">安卓 Android 手机</span>
+                        <span class="text-xs text-slate-400">使用 Chrome 等主流浏览器</span>
+                    </div>
+                    <ol class="text-xs text-slate-600 space-y-2 pl-4 list-decimal leading-relaxed">
+                        <li>使用手机 <strong class="text-teal-600">Chrome 浏览器</strong> 或自带系统浏览器打开本网页。</li>
+                        <li>点击浏览器右上角的“<strong>三个点</strong>”设置按钮。</li>
+                        <li>点击选项中的“<strong>安装应用</strong>”或“<strong>添加到主屏幕</strong>”。</li>
+                        <li>确认添加，应用即可独立显示在手机桌面中。</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="pt-6">
+                <button onclick="closePwaGuide()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-2.5 rounded-xl text-sm transition">我知道了</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模态框 1: 新建行程弹窗 -->
+    <div id="modal-new-trip" class="fixed inset-0 bg-slate-900/50 flex items-center justify-center p-4 z-50 hidden backdrop-blur-sm">
+        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl transform scale-95 transition-all duration-300">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-slate-800">新建您的精彩旅途</h3>
+                <button onclick="closeNewTripModal()" class="text-slate-400 hover:text-slate-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">旅行目的地名称</label>
+                    <input type="text" id="new-trip-destination" placeholder="例如：东京浪漫樱花5日游" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-teal-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">预算 (CNY)</label>
+                    <input type="number" id="new-trip-budget" placeholder="预算上限" value="10000" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-teal-500">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">出发日期</label>
+                        <input type="date" id="new-trip-start" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-teal-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">天数 (推荐5天)</label>
+                        <input type="number" id="new-trip-days" value="5" min="1" max="15" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-teal-500">
+                    </div>
+                </div>
+                <div class="pt-4 flex space-x-3">
+                    <button onclick="closeNewTripModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold py-2.5 rounded-xl text-sm transition">取消</button>
+                    <button onclick="saveNewTrip()" class="flex-1 bg-teal-500 hover:bg-teal-600 text-white font-semibold py-2.5 rounded-xl text-sm transition shadow-lg shadow-teal-500/10">开启旅程</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模态框 2: 修改行程基本信息弹窗 -->
+    <div id="modal-edit-trip" class="fixed inset-0 bg-slate-900/50 flex items-center justify-center p-4 z-50 hidden backdrop-blur-sm">
+        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl transform scale-95 transition-all duration-300">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-slate-800">修改您的行程信息</h3>
+                <button onclick="closeEditTripModal()" class="text-slate-400 hover:text-slate-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">行程目的地名称</label>
+                    <input type="text" id="edit-trip-destination" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-teal-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">总预算 (CNY)</label>
+                    <input type="number" id="edit-trip-budget" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-teal-500">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">出发日期</label>
+                        <input type="date" id="edit-trip-start" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-teal-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">日程总天数</label>
+                        <input type="number" id="edit-trip-days" min="1" max="15" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-teal-500">
+                    </div>
+                </div>
+                <div class="pt-4 flex space-x-3">
+                    <button onclick="closeEditTripModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold py-2.5 rounded-xl text-sm transition">取消</button>
+                    <button onclick="saveEditTrip()" class="flex-1 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2.5 rounded-xl text-sm transition shadow-lg shadow-indigo-500/10">完成修改</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模态框 3: 添加/编辑活动地点的弹窗 -->
+    <div id="modal-activity" class="fixed inset-0 bg-slate-900/50 flex items-center justify-center p-4 z-50 hidden backdrop-blur-sm">
+        <div class="bg-white rounded-2xl w-full max-w-lg p-6 shadow-2xl transform scale-95 transition-all duration-300">
+            <div class="flex justify-between items-center mb-4">
+                <h3 id="activity-modal-title" class="text-lg font-bold text-slate-800">添加游玩行程活动</h3>
+                <button onclick="closeActivityModal()" class="text-slate-400 hover:text-slate-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">对应日程天数</label>
+                        <select id="act-day-select" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-teal-500">
+                            <!-- 动态加载 -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">计划时间</label>
+                        <input type="time" id="act-time" value="09:00" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-teal-500">
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">活动主题/景点名</label>
+                    <input type="text" id="act-title" placeholder="如：东京迪士尼乐园玩耍" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-teal-500">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">具体地点/地址（必填）</label>
+                        <input type="text" id="act-location" placeholder="如：千叶县浦安市舞浜" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-teal-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">预计花费 (CNY)</label>
+                        <input type="number" id="act-cost" placeholder="0" value="0" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-teal-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">消费分类</label>
+                        <select id="act-category" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-teal-500">
+                            <option value="景点">⛩️ 景点游览</option>
+                            <option value="美食">🍱 美食餐饮</option>
+                            <option value="住宿">🏨 住宿酒店</option>
+                            <option value="交通">🚇 交通中转</option>
+                            <option value="购物">🛍️ 购物血拼</option>
+                            <option value="休闲">☕ 休闲娱乐</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">出行备忘/交通指南</label>
+                        <input type="text" id="act-notes" placeholder="乘JR京叶线到舞浜站下车" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-teal-500">
+                    </div>
+                </div>
+
+                <div class="pt-4 flex space-x-3">
+                    <button onclick="closeActivityModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold py-2.5 rounded-xl text-sm transition">取消</button>
+                    <button onclick="saveNewActivity()" class="flex-1 bg-teal-500 hover:bg-teal-600 text-white font-semibold py-2.5 rounded-xl text-sm transition shadow-lg shadow-teal-500/10">保存活动</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ======================= PWA Service Worker 动态生成与注册 =======================
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                // 利用 Blob 创建一个极简的 Service Worker 代码，无需额外托管一个单独的 sw.js
+                const swCode = `
+                    self.addEventListener('install', (event) => {
+                        self.skipWaiting();
+                    });
+                    self.addEventListener('activate', (event) => {
+                        event.waitUntil(self.clients.claim());
+                    });
+                    self.addEventListener('fetch', (event) => {
+                        // 正常的在线直通请求逻辑，不拦截，方便测试和开发
+                        event.respondWith(fetch(event.request).catch(() => {
+                            return new Response("旅途无忧目前处于离线状态，但您依然可以访问此前已缓存的行程数据！");
+                        }));
+                    });
+                `;
+                
+                try {
+                    const blob = new Blob([swCode], { type: 'application/javascript' });
+                    const swUrl = URL.createObjectURL(blob);
+                    navigator.serviceWorker.register(swUrl).then((registration) => {
+                        console.log('VoyageEase ServiceWorker 注册成功:', registration.scope);
+                    }).catch((error) => {
+                        console.warn('ServiceWorker 注册失败，但这不影响应用的基本运行:', error);
+                    });
+                } catch (e) {
+                    console.error('Service Worker Blob 初始化失败:', e);
+                }
+            });
+        }
+
+        // ======================= 数据存储区 =======================
+        const defaultTrips = [
+            {
+                id: "trip-tokyo",
+                destination: "东京城市探秘与乐园5日游",
+                budget: 12000,
+                startDate: "2026-06-25",
+                daysCount: 5,
+                cityQuery: "东京",
+                events: [
+                    { id: "e1", day: 1, time: "09:30", title: "抵达东京成田机场", location: "成田国际机场", cost: 1500, category: "交通", notes: "提取行李并购买西瓜卡(Suica)" },
+                    { id: "e2", day: 1, time: "12:00", title: "东京浅草豪景酒店办理入住", location: "浅草", cost: 1200, category: "住宿", notes: "地铁大江户线可直达酒店，环境超赞" },
+                    { id: "e3", day: 1, time: "14:00", title: "浅草寺观光 & 品尝雷门小吃", location: "雷门浅草寺", cost: 120, category: "景点", notes: "去吃著名的浅草人形烧" },
+                    { id: "e4", day: 1, time: "18:00", title: "日式顶级烧肉晚餐", location: "新宿 叙叙苑", cost: 680, category: "美食", notes: "窗边位置看新宿夜景" },
+                    { id: "e5", day: 2, time: "09:00", title: "全天畅玩东京迪士尼海洋乐园", location: "千叶县浦安市", cost: 550, category: "景点", notes: "抢DPA翱翔飞天奇梦" },
+                    { id: "e6", day: 3, time: "10:00", title: "涩谷十字路口打卡", location: "涩谷区", cost: 0, category: "景点", notes: "感受世界上最繁忙的人行横道" },
+                    { id: "e7", day: 3, time: "15:00", title: "银座下午茶 & 漫步购物", location: "银座六丁目", cost: 1200, category: "购物", notes: "精挑细选伴手礼" },
+                    { id: "e8", day: 4, time: "11:00", title: "筑地场外市场海鲜大餐", location: "筑地市场", cost: 350, category: "美食", notes: "品尝新鲜帝王蟹和海胆丼" },
+                    { id: "e9", day: 5, time: "14:00", title: "东京塔展望台观景", location: "芝公园东京塔", cost: 150, category: "休闲", notes: "寄明信片回家" }
+                ]
+            },
+            {
+                id: "trip-beijing",
+                destination: "北京文化探索浪漫5日行",
+                budget: 8000,
+                startDate: "2026-07-10",
+                daysCount: 5,
+                cityQuery: "北京",
+                events: [
+                    { id: "e30", day: 1, time: "09:00", title: "天安门广场观礼 & 故宫博物院", location: "故宫", cost: 120, category: "景点", notes: "提前7天在小程序预约门票" },
+                    { id: "e31", day: 1, time: "12:30", title: "四季民福享用北京烤鸭", location: "东华门大街", cost: 280, category: "美食", notes: "边吃烤鸭边欣赏故宫护城河" },
+                    { id: "e32", day: 2, time: "08:30", title: "攀登八达岭长城", location: "延庆区八达岭", cost: 200, category: "景点", notes: "乘坐s2线小火车体验爱国之旅" },
+                    { id: "e33", day: 3, time: "13:00", title: "游览颐和园昆明湖", location: "颐和园", cost: 60, category: "景点", notes: "荡舟昆明湖上赏十七孔桥" },
+                    { id: "e34", day: 4, time: "14:00", title: "南锣鼓巷四合院寻幽", location: "东城区南锣鼓巷", cost: 150, category: "休闲", notes: "品尝胡同特色文创冰淇淋" },
+                    { id: "e35", day: 5, time: "16:00", title: "蓝色港湾逛街游玩", location: "朝阳区蓝色港湾", cost: 500, category: "购物", notes: "夜景灯光秀极美" }
+                ]
+            }
+        ];
+
+        const exchangeRates = { CNY: 1.0, USD: 0.138, EUR: 0.127, JPY: 21.65, KRW: 191.24, GBP: 0.108 };
+
+        const mockWeatherData = {
+            "东京": {
+                temp: 24, desc: "多云", icon: "⛅", humidity: "62%", wind: "东风 2级",
+                tips: {
+                    clothing: "穿轻薄短袖、防晒衣或透气长裤。早晚清凉，建议携带一件薄长袖外套。",
+                    necessity: "备好防雨遮阳两用伞、轻便防磨脚运动鞋，随身携带免洗消毒洗手液。",
+                    activity: "今天适合前往代代木公园或新宿御苑漫游，傍晚去涩谷Sky观赏日落最赞。"
+                },
+                sevenDays: [
+                    { day: "周一", temp: "22/27°C", desc: "晴", icon: "☀️" },
+                    { day: "周二", temp: "21/25°C", desc: "晴转多云", icon: "⛅" },
+                    { day: "周三", temp: "20/24°C", desc: "阵雨", icon: "🌧️" },
+                    { day: "周四", temp: "22/26°C", desc: "多云", icon: "⛅" },
+                    { day: "周五", temp: "23/28°C", desc: "阴天", icon: "☁️" },
+                    { day: "周六", temp: "24/29°C", desc: "雷阵雨", icon: "⛈️" },
+                    { day: "周日", temp: "23/27°C", desc: "多云转晴", icon: "🌤️" }
+                ]
+            },
+            "北京": {
+                temp: 31, desc: "晴朗", icon: "☀️", humidity: "38%", wind: "西北风 1级",
+                tips: {
+                    clothing: "天气炎热，建议穿着透气的轻薄短袖或背心。户外活动请一定要做好硬防晒。",
+                    necessity: "强紫外线，遮阳帽、偏光墨镜、遮阳伞和防晒霜是必须的，并大量饮水防暑。",
+                    activity: "适宜游览故宫或颐和园，但中午前后尽量避免大面积在烈日下行走，可前往室内展馆避暑。"
+                },
+                sevenDays: [
+                    { day: "周一", temp: "25/32°C", desc: "晴", icon: "☀️" },
+                    { day: "周二", temp: "26/34°C", desc: "晴天暴晒", icon: "☀️" },
+                    { day: "周三", temp: "25/33°C", desc: "多云", icon: "⛅" },
+                    { day: "周四", temp: "22/30°C", desc: "多云转晴", icon: "🌤️" },
+                    { day: "周五", temp: "23/31°C", desc: "阴天", icon: "☁️" },
+                    { day: "周六", temp: "24/32°C", desc: "雷阵雨", icon: "⛈️" },
+                    { day: "周日", temp: "23/30°C", desc: "多云", icon: "⛅" }
+                ]
+            }
+        };
+
+        let trips = [];
+        let currentTripId = "";
+        let selectedDay = 1; 
+        let currentEditEventId = null;
+
+        // ======================= 初始化逻辑 =======================
+        window.onload = function() {
+            const savedTrips = localStorage.getItem("voyage_ease_trips2");
+            const savedActiveId = localStorage.getItem("voyage_ease_active_id2");
+
+            if (savedTrips) {
+                trips = JSON.parse(savedTrips);
+            } else {
+                trips = defaultTrips;
+                localStorage.setItem("voyage_ease_trips2", JSON.stringify(trips));
+            }
+
+            if (savedActiveId && trips.some(t => t.id === savedActiveId)) {
+                currentTripId = savedActiveId;
+            } else {
+                currentTripId = trips[0].id;
+                localStorage.setItem("voyage_ease_active_id2", currentTripId);
+            }
+
+            renderTripSelector();
+            renderDashboard();
+            renderItinerary();
+            renderExchangeRates();
+            renderWeatherSection();
+
+            // 如果当前是在全屏 standalone WebApp 模式打开，则隐藏顶部提示 banner
+            if (window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches) {
+                const pwaBanner = document.getElementById("pwa-mobile-banner");
+                if (pwaBanner) pwaBanner.classList.add("hidden");
+            }
+        };
+
+        // ======================= WebApp 引导控制 =======================
+        function openPwaGuide() {
+            document.getElementById("modal-pwa-guide").classList.remove("hidden");
+        }
+
+        function closePwaGuide() {
+            document.getElementById("modal-pwa-guide").classList.add("hidden");
+        }
+
+        // ======================= 标签切换 =======================
+        function switchTab(tabId) {
+            const views = ["dashboard", "itinerary", "exchange", "weather"];
+            views.forEach(v => {
+                const viewEl = document.getElementById(`tab-${v}-view`);
+                if (viewEl) {
+                    if (v === tabId) {
+                        viewEl.classList.remove("hidden");
+                    } else {
+                        viewEl.classList.add("hidden");
+                    }
+                }
+
+                const navBtn = document.getElementById(`nav-${v}`);
+                if (navBtn) {
+                    if (v === tabId) {
+                        navBtn.className = "nav-item w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition duration-200 hover:bg-slate-800 text-teal-400 bg-slate-800/80";
+                    } else {
+                        navBtn.className = "nav-item w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition duration-200 hover:bg-slate-800 text-slate-300";
+                    }
+                }
+
+                const mobBtn = document.getElementById(`mob-${v}`);
+                if (mobBtn) {
+                    if (v === tabId) {
+                        mobBtn.className = "flex flex-col items-center space-y-0.5 text-teal-400";
+                    } else {
+                        mobBtn.className = "flex flex-col items-center space-y-0.5 text-slate-400";
+                    }
+                }
+            });
+
+            const titles = {
+                dashboard: "我的仪表盘",
+                itinerary: "行程详细规划",
+                exchange: "出境汇率管家",
+                weather: "目的地天气预报"
+            };
+            document.getElementById("header-title").innerText = titles[tabId];
+
+            if (tabId === 'itinerary') {
+                renderItinerary();
+            } else if (tabId === 'dashboard') {
+                renderDashboard();
+            } else if (tabId === 'weather') {
+                updateWeatherByCurrentTrip();
+            }
+        }
+
+        // ======================= 切换行程 =======================
+        function renderTripSelector() {
+            const selector = document.getElementById("trip-selector");
+            selector.innerHTML = "";
+            trips.forEach(trip => {
+                const opt = document.createElement("option");
+                opt.value = trip.id;
+                opt.innerText = trip.destination;
+                if (trip.id === currentTripId) {
+                    opt.selected = true;
+                }
+                selector.appendChild(opt);
+            });
+        }
+
+        function changeCurrentTrip(tripId) {
+            currentTripId = tripId;
+            localStorage.setItem("voyage_ease_active_id2", tripId);
+            selectedDay = 1; 
+            renderDashboard();
+            renderItinerary();
+            updateWeatherByCurrentTrip();
+            showToast("成功切换到行程: " + getCurrentTrip().destination);
+        }
+
+        function getCurrentTrip() {
+            return trips.find(t => t.id === currentTripId) || trips[0];
+        }
+
+        function saveTripsToStorage() {
+            localStorage.setItem("voyage_ease_trips2", JSON.stringify(trips));
+        }
+
+        // ======================= 仪表盘逻辑 =======================
+        function renderDashboard() {
+            const trip = getCurrentTrip();
+            if (!trip) return;
+
+            document.getElementById("dash-trip-name").innerText = trip.destination;
+            
+            const startDate = new Date(trip.startDate);
+            const endDate = new Date(startDate);
+            endDate.setDate(startDate.getDate() + (trip.daysCount - 1));
+            document.getElementById("dash-trip-dates").innerText = `${formatDate(startDate)} 至 ${formatDate(endDate)}`;
+
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            const startTime = new Date(trip.startDate);
+            startTime.setHours(0,0,0,0);
+            const diffTime = startTime - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            const countdownEl = document.getElementById("dash-countdown");
+            if (diffDays > 0) {
+                countdownEl.innerText = diffDays;
+            } else if (diffDays === 0) {
+                countdownEl.innerText = "今日";
+            } else {
+                countdownEl.innerText = "已结束";
+            }
+
+            let totalSpent = 0;
+            trip.events.forEach(e => {
+                totalSpent += parseFloat(e.cost || 0);
+            });
+            document.getElementById("dash-spent").innerText = "¥ " + totalSpent.toLocaleString();
+            document.getElementById("dash-budget").innerText = "¥ " + trip.budget.toLocaleString();
+            
+            const progressPercent = Math.min((totalSpent / trip.budget) * 100, 100);
+            const progressBar = document.getElementById("dash-budget-progress");
+            progressBar.style.width = progressPercent + "%";
+            if (progressPercent >= 100) {
+                progressBar.className = "bg-rose-500 h-2 rounded-full transition-all duration-500";
+            } else if (progressPercent >= 80) {
+                progressBar.className = "bg-amber-500 h-2 rounded-full transition-all duration-500";
+            } else {
+                progressBar.className = "bg-teal-500 h-2 rounded-full transition-all duration-500";
+            }
+
+            const cityName = trip.cityQuery || "东京";
+            document.getElementById("dash-city-name").innerText = cityName;
+            const weather = mockWeatherData[cityName] || mockWeatherData["东京"];
+            document.getElementById("dash-weather-temp").innerText = weather.temp + "°C";
+            document.getElementById("dash-weather-icon").innerText = weather.icon;
+            document.getElementById("dash-weather-desc").innerText = weather.desc;
+
+            const usdRate = (1 * exchangeRates.USD).toFixed(4);
+            const jpyRate = (1 * exchangeRates.JPY).toFixed(2);
+            document.getElementById("dash-rate-usd").innerText = usdRate + " USD";
+            document.getElementById("dash-rate-jpy").innerText = jpyRate + " JPY";
+
+            const todayEventsContainer = document.getElementById("dash-today-events");
+            todayEventsContainer.innerHTML = "";
+
+            const day1Events = trip.events.filter(e => e.day === 1).sort((a,b) => a.time.localeCompare(b.time));
+            if (day1Events.length === 0) {
+                todayEventsContainer.innerHTML = `
+                    <div class="text-center py-6 text-slate-400 text-sm">
+                        🌸 首日暂无行程地点，快去“行程规划”添加打卡景点吧！
+                    </div>
+                `;
+            } else {
+                day1Events.forEach(evt => {
+                    const categoryColors = {
+                        "景点": "bg-emerald-50 text-emerald-600 border-emerald-100",
+                        "美食": "bg-amber-50 text-amber-600 border-amber-100",
+                        "住宿": "bg-indigo-50 text-indigo-600 border-indigo-100",
+                        "交通": "bg-rose-50 text-rose-600 border-rose-100",
+                        "购物": "bg-fuchsia-50 text-fuchsia-600 border-fuchsia-100",
+                        "休闲": "bg-sky-50 text-sky-600 border-sky-100"
+                    };
+                    const colorClass = categoryColors[evt.category] || "bg-slate-50 text-slate-600 border-slate-100";
+
+                    const div = document.createElement("div");
+                    div.className = "relative pl-8 transition duration-150 group";
+                    div.innerHTML = `
+                        <span class="absolute left-[9px] top-1.5 w-3.5 h-3.5 rounded-full bg-teal-500 border-4 border-white shadow-sm z-10"></span>
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-50/50 hover:bg-slate-50 border border-slate-100 p-3.5 rounded-xl transition gap-2">
+                            <div class="flex items-start space-x-3">
+                                <span class="text-xs font-bold text-teal-600 bg-teal-50 px-2 py-1 rounded-lg shrink-0 mt-0.5">${evt.time}</span>
+                                <div>
+                                    <h5 class="font-bold text-slate-800 text-sm group-hover:text-teal-600 transition">${evt.title}</h5>
+                                    <p class="text-xs text-slate-400 mt-1 flex items-center">
+                                        <svg class="w-3.5 h-3.5 mr-1 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
+                                        <span>${evt.location}</span>
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2 self-end sm:self-auto">
+                                <span class="text-xs font-semibold px-2 py-0.5 rounded-full border ${colorClass}">${evt.category}</span>
+                                <span class="text-xs font-bold text-slate-500">¥${evt.cost}</span>
+                            </div>
+                        </div>
+                    `;
+                    todayEventsContainer.appendChild(div);
+                });
+            }
+        }
+
+        // ======================= 行程规划逻辑 =======================
+        function renderItinerary() {
+            const trip = getCurrentTrip();
+            if (!trip) return;
+
+            document.getElementById("itin-stat-days").innerText = `${trip.daysCount} 天`;
+            
+            let totalSpent = 0;
+            const catCount = {};
+            trip.events.forEach(e => {
+                totalSpent += parseFloat(e.cost || 0);
+                catCount[e.category] = (catCount[e.category] || 0) + parseFloat(e.cost || 0);
+            });
+            document.getElementById("itin-stat-spent").innerText = `¥ ${totalSpent.toLocaleString()}`;
+
+            let mainCategory = "暂无消费支出";
+            let maxVal = -1;
+            Object.keys(catCount).forEach(cat => {
+                if (catCount[cat] > maxVal && catCount[cat] > 0) {
+                    maxVal = catCount[cat];
+                    mainCategory = `${cat} (¥${maxVal})`;
+                }
+            });
+            document.getElementById("itin-stat-category").innerText = mainCategory;
+
+            // 构建 Journey 导航条
+            const stepsContainer = document.getElementById("itin-nav-steps-container");
+            stepsContainer.innerHTML = "";
+            const daysCount = trip.daysCount;
+            const dayIcons = ["🛫", "⛩️", "🛍️", "🍱", "🧳", "🌲", "☕", "🏔️", "🏛️", "🛥️"];
+
+            for (let i = 1; i <= daysCount; i++) {
+                const stepNode = document.createElement("button");
+                stepNode.onclick = () => selectItineraryDay(i);
+                
+                const isActive = (i === selectedDay);
+                const isCompleted = (i < selectedDay);
+                const dayEventCount = trip.events.filter(e => e.day === i).length;
+
+                let iconColorClass = "bg-slate-100 text-slate-400 border-slate-200";
+                let textColorClass = "text-slate-400 font-medium";
+                if (isActive) {
+                    iconColorClass = "bg-teal-500 text-white border-teal-500 ring-4 ring-teal-100 scale-110";
+                    textColorClass = "text-teal-600 font-bold scale-105";
+                } else if (isCompleted) {
+                    iconColorClass = "bg-emerald-50 text-emerald-600 border-emerald-300";
+                    textColorClass = "text-emerald-600 font-semibold";
+                }
+
+                const dayIcon = dayIcons[(i - 1) % dayIcons.length];
+
+                stepNode.className = "flex flex-col items-center flex-1 focus:outline-none transition-all duration-300 shrink-0";
+                stepNode.innerHTML = `
+                    <div class="flex items-center justify-center w-11 h-11 rounded-full border-2 ${iconColorClass} transition-all duration-200 text-lg shadow-sm">
+                        <span>${dayIcon}</span>
+                    </div>
+                    <span class="text-xs mt-2 ${textColorClass}">Day ${i}</span>
+                    <span class="text-[10px] text-slate-400 px-1.5 py-0.5 bg-slate-100 rounded-md mt-1">${dayEventCount} 项活动</span>
+                `;
+                stepsContainer.appendChild(stepNode);
+            }
+
+            const progressPercent = daysCount > 1 ? ((selectedDay - 1) / (daysCount - 1)) * 100 : 0;
+            document.getElementById("itin-nav-progress").style.width = `calc(${progressPercent}% - 24px)`;
+
+            document.getElementById("itin-current-day-title").innerText = `第 ${selectedDay} 天 行程安排`;
+            const dateCursor = new Date(trip.startDate);
+            dateCursor.setDate(dateCursor.getDate() + (selectedDay - 1));
+            document.getElementById("itin-current-day-date").innerText = `当前日期: ${formatDate(dateCursor)}`;
+
+            let dayBudgetSum = 0;
+            trip.events.filter(e => e.day === selectedDay).forEach(e => {
+                dayBudgetSum += parseFloat(e.cost || 0);
+            });
+            document.getElementById("itin-current-day-budget").innerText = `当天消费预算: ¥${dayBudgetSum.toLocaleString()}`;
+
+            renderLocationsView(trip);
+
+            // 日程时间轴详情列表
+            const eventsListContainer = document.getElementById("itin-events-list");
+            eventsListContainer.innerHTML = "";
+
+            const dayEvents = trip.events.filter(e => e.day === selectedDay).sort((a,b) => a.time.localeCompare(b.time));
+            if (dayEvents.length === 0) {
+                eventsListContainer.innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-16 text-slate-400 space-y-3">
+                        <span class="text-4xl">🏝️</span>
+                        <p class="text-sm font-medium">今天还没安排出行打卡，给自己定一个小目标吧！</p>
+                        <button onclick="openActivityModal()" class="text-xs bg-teal-500 text-white px-3 py-1.5 rounded-lg font-bold hover:bg-teal-600 transition shadow-sm">立即添加活动</button>
+                    </div>
+                `;
+            } else {
+                dayEvents.forEach(evt => {
+                    const categoryColors = {
+                        "景点": "bg-emerald-50 text-emerald-600 border-emerald-100",
+                        "美食": "bg-amber-50 text-amber-600 border-amber-100",
+                        "住宿": "bg-indigo-50 text-indigo-600 border-indigo-100",
+                        "交通": "bg-rose-50 text-rose-600 border-rose-100",
+                        "购物": "bg-fuchsia-50 text-fuchsia-600 border-fuchsia-100",
+                        "休闲": "bg-sky-50 text-sky-600 border-sky-100"
+                    };
+                    const colorClass = categoryColors[evt.category] || "bg-slate-50 text-slate-600 border-slate-100";
+
+                    const div = document.createElement("div");
+                    div.className = "relative pl-8 transition duration-200 group";
+                    div.innerHTML = `
+                        <span class="absolute left-[9px] top-2 w-4 h-4 rounded-full bg-white border-4 border-teal-500 shadow-md group-hover:bg-teal-500 transition-colors z-10"></span>
+                        <div class="bg-slate-50 hover:bg-white border border-slate-100 hover:border-slate-200 rounded-2xl p-4 transition-all hover:shadow-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                            <div class="space-y-1.5 flex-1">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span class="text-xs font-bold text-teal-600 bg-teal-50 border border-teal-100 px-2 py-0.5 rounded-lg">${evt.time}</span>
+                                    <span class="text-xs font-semibold border ${colorClass} px-2 py-0.5 rounded-full">${evt.category}</span>
+                                    <h4 class="font-bold text-slate-800 text-base group-hover:text-teal-600 transition">${evt.title}</h4>
+                                </div>
+                                <div class="flex flex-wrap items-center text-xs text-slate-400 gap-4 pt-1">
+                                    <span class="flex items-center">
+                                        <svg class="w-3.5 h-3.5 mr-1 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
+                                        打卡地点: <strong class="text-slate-600 ml-1">${evt.location}</strong>
+                                    </span>
+                                    ${evt.notes ? `<span class="bg-slate-100/80 text-slate-500 px-2 py-0.5 rounded">📝 ${evt.notes}</span>` : ""}
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between w-full sm:w-auto border-t sm:border-t-0 border-slate-100 pt-2 sm:pt-0 shrink-0">
+                                <div class="text-right sm:mr-4">
+                                    <p class="text-[10px] text-slate-400">预计花费</p>
+                                    <p class="font-bold text-slate-700">¥${evt.cost}</p>
+                                </div>
+                                <div class="flex items-center space-x-1">
+                                    <button onclick="editActivity('${evt.id}')" class="text-slate-300 hover:text-indigo-500 p-1.5 rounded-lg hover:bg-indigo-50 transition" title="修改该日程">
+                                        <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                    </button>
+                                    <button onclick="deleteActivity('${evt.id}')" class="text-slate-300 hover:text-rose-500 p-1.5 rounded-lg hover:bg-rose-50 transition" title="删除当前地点">
+                                        <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    eventsListContainer.appendChild(div);
+                });
+            }
+        }
+
+        function selectItineraryDay(dayNumber) {
+            selectedDay = dayNumber;
+            renderItinerary();
+        }
+
+        // ======================= 提取与展示地点 + SVG 互动路径 =======================
+        function renderLocationsView(trip) {
+            const listContainer = document.getElementById("itin-locations-list");
+            listContainer.innerHTML = "";
+            
+            const sortedEvents = [...trip.events].sort((a,b) => {
+                if(a.day !== b.day) return a.day - b.day;
+                return a.time.localeCompare(b.time);
+            });
+
+            const uniqueLocations = [];
+            sortedEvents.forEach(evt => {
+                if(!uniqueLocations.some(loc => loc.name === evt.location)) {
+                    uniqueLocations.push({
+                        name: evt.location,
+                        day: evt.day,
+                        category: evt.category,
+                        title: evt.title
+                    });
+                }
+            });
+
+            if (uniqueLocations.length === 0) {
+                listContainer.innerHTML = `
+                    <p class="text-xs text-slate-400 text-center py-4">暂无任何打卡地点。请添加游玩活动。</p>
+                `;
+                drawRouteSVG([]);
+                return;
+            }
+
+            uniqueLocations.forEach((loc, index) => {
+                const item = document.createElement("div");
+                item.className = "flex items-center justify-between p-2.5 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-100 transition cursor-pointer";
+                item.onclick = () => {
+                    selectItineraryDay(loc.day);
+                };
+                
+                item.innerHTML = `
+                    <div class="flex items-center space-x-2 overflow-hidden">
+                        <span class="w-5 h-5 flex items-center justify-center bg-teal-100 text-teal-700 text-[10px] font-bold rounded-full shrink-0">${index + 1}</span>
+                        <div class="truncate">
+                            <p class="text-xs font-bold text-slate-700 truncate">${loc.name}</p>
+                            <p class="text-[9px] text-slate-400">Day ${loc.day} - ${loc.title}</p>
+                        </div>
+                    </div>
+                    <span class="text-[9px] px-1.5 py-0.5 bg-white border rounded text-slate-500 shrink-0">第 ${loc.day} 天</span>
+                `;
+                listContainer.appendChild(item);
+            });
+
+            drawRouteSVG(uniqueLocations);
+        }
+
+        function drawRouteSVG(locations) {
+            const svg = document.getElementById("route-svg-line");
+            svg.innerHTML = "";
+
+            if (locations.length === 0) return;
+
+            const w = svg.clientWidth || 240;
+            const h = svg.clientHeight || 128;
+
+            const points = [];
+            const count = locations.length;
+            
+            if (count === 1) {
+                points.push({ x: w / 2, y: h / 2, name: locations[0].name });
+            } else {
+                for (let i = 0; i < count; i++) {
+                    const percent = i / (count - 1);
+                    const x = 24 + percent * (w - 48);
+                    const y = h / 2 + Math.sin(percent * Math.PI * 1.5) * (h / 4);
+                    points.push({ x, y, name: locations[i].name });
+                }
+            }
+
+            if (count > 1) {
+                let dPath = `M ${points[0].x} ${points[0].y}`;
+                for (let i = 1; i < count; i++) {
+                    dPath += ` L ${points[i].x} ${points[i].y}`;
+                }
+
+                const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                path.setAttribute("d", dPath);
+                path.setAttribute("fill", "none");
+                path.setAttribute("stroke", "#14b8a6"); 
+                path.setAttribute("stroke-width", "2");
+                path.setAttribute("stroke-dasharray", "4,4");
+                svg.appendChild(path);
+            }
+
+            points.forEach((pt, idx) => {
+                const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+
+                const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                circle.setAttribute("cx", pt.x);
+                circle.setAttribute("cy", pt.y);
+                circle.setAttribute("r", "8");
+                circle.setAttribute("fill", "#10b981"); 
+                circle.setAttribute("stroke", "white");
+                circle.setAttribute("stroke-width", "2");
+
+                const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                text.setAttribute("x", pt.x);
+                text.setAttribute("y", pt.y + 3);
+                text.setAttribute("fill", "white");
+                text.setAttribute("font-size", "8px");
+                text.setAttribute("font-weight", "bold");
+                text.setAttribute("text-anchor", "middle");
+                text.textContent = idx + 1;
+
+                const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
+                title.textContent = pt.name;
+
+                group.appendChild(circle);
+                group.appendChild(text);
+                group.appendChild(title);
+                svg.appendChild(group);
+            });
+        }
+
+        // ======================= 修改行程与保存基本信息控制 =======================
+        function openEditTripModal() {
+            const trip = getCurrentTrip();
+            if (!trip) return;
+
+            document.getElementById("edit-trip-destination").value = trip.destination;
+            document.getElementById("edit-trip-budget").value = trip.budget;
+            document.getElementById("edit-trip-start").value = trip.startDate;
+            document.getElementById("edit-trip-days").value = trip.daysCount;
+
+            document.getElementById("modal-edit-trip").classList.remove("hidden");
+        }
+
+        function closeEditTripModal() {
+            document.getElementById("modal-edit-trip").classList.add("hidden");
+        }
+
+        function saveEditTrip() {
+            const trip = getCurrentTrip();
+            if (!trip) return;
+
+            const dest = document.getElementById("edit-trip-destination").value.trim();
+            const budget = parseFloat(document.getElementById("edit-trip-budget").value);
+            const start = document.getElementById("edit-trip-start").value;
+            const days = parseInt(document.getElementById("edit-trip-days").value);
+
+            if (!dest) {
+                showToast("请输入目的地旅行名称！", "warning");
+                return;
+            }
+            if (isNaN(budget) || budget <= 0) {
+                showToast("请输入合法的预算金额！", "warning");
+                return;
+            }
+            if (!start) {
+                showToast("请选择出发日期！", "warning");
+                return;
+            }
+            if (isNaN(days) || days <= 0 || days > 30) {
+                showToast("天数限在1到30天之间！", "warning");
+                return;
+            }
+
+            trip.destination = dest;
+            trip.budget = budget;
+            trip.startDate = start;
+            
+            if (days < trip.daysCount) {
+                trip.events.forEach(evt => {
+                    if (evt.day > days) {
+                        evt.day = days;
+                    }
+                });
+            }
+            trip.daysCount = days;
+
+            let cityQuery = dest.substring(0, 2);
+            if (dest.includes("东京")) cityQuery = "东京";
+            else if (dest.includes("北京")) cityQuery = "北京";
+            trip.cityQuery = cityQuery;
+
+            saveTripsToStorage();
+            renderTripSelector();
+            renderDashboard();
+            renderItinerary();
+            updateWeatherByCurrentTrip();
+            closeEditTripModal();
+            showToast("成功更新行程基础信息！✍️");
+        }
+
+        // ======================= 修改与添加游玩活动 =======================
+        function openActivityModal(eventId = null) {
+            const trip = getCurrentTrip();
+            const daySelect = document.getElementById("act-day-select");
+            daySelect.innerHTML = "";
+            
+            for (let i = 1; i <= trip.daysCount; i++) {
+                const opt = document.createElement("option");
+                opt.value = i;
+                opt.innerText = `Day ${i}`;
+                if (i === selectedDay) opt.selected = true;
+                daySelect.appendChild(opt);
+            }
+
+            if (eventId) {
+                currentEditEventId = eventId;
+                const evt = trip.events.find(e => e.id === eventId);
+                
+                document.getElementById("activity-modal-title").innerText = "编辑活动日程";
+                document.getElementById("act-day-select").value = evt.day;
+                document.getElementById("act-time").value = evt.time;
+                document.getElementById("act-title").value = evt.title;
+                document.getElementById("act-location").value = evt.location;
+                document.getElementById("act-cost").value = evt.cost;
+                document.getElementById("act-category").value = evt.category;
+                document.getElementById("act-notes").value = evt.notes;
+            } else {
+                currentEditEventId = null;
+                document.getElementById("activity-modal-title").innerText = "添加游玩行程活动";
+                document.getElementById("act-time").value = "09:00";
+                document.getElementById("act-title").value = "";
+                document.getElementById("act-location").value = "";
+                document.getElementById("act-cost").value = "0";
+                document.getElementById("act-category").value = "景点";
+                document.getElementById("act-notes").value = "";
+            }
+
+            document.getElementById("modal-activity").classList.remove("hidden");
+        }
+
+        function closeActivityModal() {
+            document.getElementById("modal-activity").classList.add("hidden");
+        }
+
+        function editActivity(eventId) {
+            openActivityModal(eventId);
+        }
+
+        function saveNewActivity() {
+            const trip = getCurrentTrip();
+            const day = parseInt(document.getElementById("act-day-select").value);
+            const time = document.getElementById("act-time").value;
+            const title = document.getElementById("act-title").value.trim();
+            const location = document.getElementById("act-location").value.trim();
+            const cost = parseFloat(document.getElementById("act-cost").value);
+            const category = document.getElementById("act-category").value;
+            const notes = document.getElementById("act-notes").value.trim();
+
+            if (!title) {
+                showToast("请输入活动主题！", "warning");
+                return;
+            }
+            if (!location) {
+                showToast("请输入具体的打卡地点！", "warning");
+                return;
+            }
+            if (isNaN(cost) || cost < 0) {
+                showToast("请输入正确的开支金额！", "warning");
+                return;
+            }
+
+            if (currentEditEventId) {
+                const evtIndex = trip.events.findIndex(e => e.id === currentEditEventId);
+                if (evtIndex !== -1) {
+                    trip.events[evtIndex] = {
+                        ...trip.events[evtIndex],
+                        day: day,
+                        time: time || "09:00",
+                        title: title,
+                        location: location,
+                        cost: cost,
+                        category: category,
+                        notes: notes
+                    };
+                    showToast("行程信息已更新！✏️");
+                }
+            } else {
+                const newEvent = {
+                    id: "event-" + Date.now(),
+                    day: day,
+                    time: time || "09:00",
+                    title: title,
+                    location: location,
+                    cost: cost,
+                    category: category,
+                    notes: notes
+                };
+                trip.events.push(newEvent);
+                showToast("打卡活动添加成功！🎉");
+            }
+
+            saveTripsToStorage();
+            selectedDay = day; 
+
+            renderDashboard();
+            renderItinerary();
+            closeActivityModal();
+        }
+
+        function deleteActivity(eventId) {
+            const trip = getCurrentTrip();
+            trip.events = trip.events.filter(e => e.id !== eventId);
+            saveTripsToStorage();
+            
+            renderDashboard();
+            renderItinerary();
+            showToast("已成功删除该地点打卡。");
+        }
+
+        // ======================= 新建与删除完整旅途行程 =======================
+        function openNewTripModal() {
+            document.getElementById("modal-new-trip").classList.remove("hidden");
+        }
+
+        function closeNewTripModal() {
+            document.getElementById("modal-new-trip").classList.add("hidden");
+        }
+
+        function saveNewTrip() {
+            const dest = document.getElementById("new-trip-destination").value.trim();
+            const budget = parseFloat(document.getElementById("new-trip-budget").value);
+            const start = document.getElementById("new-trip-start").value;
+            const days = parseInt(document.getElementById("new-trip-days").value);
+
+            if (!dest) {
+                showToast("请输入目的地旅行名称！", "warning");
+                return;
+            }
+            if (isNaN(budget) || budget <= 0) {
+                showToast("请输入有效的旅行预算！", "warning");
+                return;
+            }
+            if (!start) {
+                showToast("请选择出发日期！", "warning");
+                return;
+            }
+            if (isNaN(days) || days <= 0 || days > 30) {
+                showToast("天数限在1到30天之间！", "warning");
+                return;
+            }
+
+            let cityQuery = dest.substring(0, 2);
+            if (dest.includes("东京")) cityQuery = "东京";
+            else if (dest.includes("北京")) cityQuery = "北京";
+
+            const newTrip = {
+                id: "trip-" + Date.now(),
+                destination: dest,
+                budget: budget,
+                startDate: start,
+                daysCount: days,
+                cityQuery: cityQuery,
+                events: []
+            };
+
+            trips.push(newTrip);
+            currentTripId = newTrip.id;
+            selectedDay = 1;
+
+            saveTripsToStorage();
+            renderTripSelector();
+            renderDashboard();
+            renderItinerary();
+            updateWeatherByCurrentTrip();
+            closeNewTripModal();
+            showToast("新旅程已开辟: " + dest + "！🏕️");
+        }
+
+        function deleteCurrentTrip() {
+            if (trips.length <= 1) {
+                showToast("至少需保留一个规划中的行程！", "warning");
+                return;
+            }
+
+            const trip = getCurrentTrip();
+            if (confirm(`确定要永远删除行程“${trip.destination}”吗？此操作不可逆。`)) {
+                trips = trips.filter(t => t.id !== currentTripId);
+                currentTripId = trips[0].id;
+                selectedDay = 1;
+
+                saveTripsToStorage();
+                renderTripSelector();
+                renderDashboard();
+                renderItinerary();
+                updateWeatherByCurrentTrip();
+                showToast("行程已成功删除。");
+            }
+        }
+
+        // ======================= 汇率折算 =======================
+        function convertCurrency() {
+            const fromCurr = document.getElementById("exc-from-currency").value;
+            const toCurr = document.getElementById("exc-to-currency").value;
+            const amount = parseFloat(document.getElementById("exc-from-amount").value);
+
+            if (isNaN(amount) || amount <= 0) {
+                document.getElementById("exc-to-amount").innerText = "0.00";
+                return;
+            }
+
+            const amountInCNY = amount / exchangeRates[fromCurr];
+            const result = amountInCNY * exchangeRates[toCurr];
+
+            const formatDecimals = (toCurr === 'JPY' || toCurr === 'KRW') ? 0 : 2;
+            document.getElementById("exc-to-amount").innerText = result.toLocaleString(undefined, { minimumFractionDigits: formatDecimals, maximumFractionDigits: formatDecimals }) + " " + toCurr;
+
+            document.getElementById("quick-convert-title").innerText = `可折算成 ${toCurr} (${toCurr})`;
+            renderQuickConversionTable(fromCurr, toCurr);
+        }
+
+        function swapCurrencies() {
+            const fromSelect = document.getElementById("exc-from-currency");
+            const toSelect = document.getElementById("exc-to-currency");
+
+            const temp = fromSelect.value;
+            fromSelect.value = toSelect.value;
+            toSelect.value = temp;
+
+            convertCurrency();
+            showToast("汇率换算方向已切换");
+        }
+
+        function renderQuickConversionTable(from, to) {
+            const quickTable = document.getElementById("exc-quick-table");
+            quickTable.innerHTML = "";
+
+            const sampleAmounts = [10, 50, 100, 1000];
+            sampleAmounts.forEach(amt => {
+                const amountInCNY = amt / exchangeRates[from];
+                const result = amountInCNY * exchangeRates[to];
+                
+                const formatDecimals = (to === 'JPY' || to === 'KRW') ? 0 : 2;
+                const resultFormatted = result.toLocaleString(undefined, { minimumFractionDigits: formatDecimals, maximumFractionDigits: formatDecimals });
+
+                const div = document.createElement("div");
+                div.className = "flex justify-between items-center text-sm text-slate-700 py-1";
+                div.innerHTML = `
+                    <span class="font-medium">${amt} ${from}</span>
+                    <span class="font-bold text-slate-800">${resultFormatted} ${to}</span>
+                `;
+                quickTable.appendChild(div);
+            });
+        }
+
+        function renderExchangeRates() {
+            convertCurrency();
+        }
+
+        // ======================= 天气查询 =======================
+        function renderWeatherSection(cityName = "北京") {
+            const data = mockWeatherData[cityName] || mockWeatherData["北京"];
+            
+            document.getElementById("wea-cur-city").innerText = cityName;
+            document.getElementById("wea-cur-icon").innerText = data.icon;
+            document.getElementById("wea-cur-temp").innerText = data.temp + "°C";
+            document.getElementById("wea-cur-desc").innerText = data.desc;
+            document.getElementById("wea-cur-humidity").innerText = data.humidity;
+            document.getElementById("wea-cur-wind").innerText = data.wind;
+
+            const sevenDaysContainer = document.getElementById("wea-seven-days");
+            sevenDaysContainer.innerHTML = "";
+            data.sevenDays.forEach(day => {
+                const card = document.createElement("div");
+                card.className = "bg-slate-50 rounded-xl p-3 text-center border border-slate-100 flex flex-col justify-between h-32 hover:border-teal-200 transition";
+                card.innerHTML = `
+                    <p class="text-xs font-semibold text-slate-400">${day.day}</p>
+                    <span class="text-3xl my-1.5 inline-block">${day.icon}</span>
+                    <div>
+                        <p class="text-xs font-bold text-slate-700">${day.temp}</p>
+                        <p class="text-[10px] text-slate-500 mt-0.5">${day.desc}</p>
+                    </div>
+                `;
+                sevenDaysContainer.appendChild(card);
+            });
+
+            document.getElementById("tip-clothing").innerText = data.tips.clothing;
+            document.getElementById("tip-necessity").innerText = data.tips.necessity;
+            document.getElementById("tip-activity").innerText = data.tips.activity;
+        }
+
+        function updateWeatherByCurrentTrip() {
+            const trip = getCurrentTrip();
+            if (trip) {
+                renderWeatherSection(trip.cityQuery || "北京");
+            }
+        }
+
+        function searchCityWeather() {
+            const inputVal = document.getElementById("weather-city-input").value.trim();
+            if (!inputVal) {
+                showToast("请输入你想查询的城市", "warning");
+                return;
+            }
+
+            if (mockWeatherData[inputVal]) {
+                renderWeatherSection(inputVal);
+                showToast("获取 " + inputVal + " 天气成功");
+            } else {
+                const randomTemps = [
+                    { t: 15, d: "阵雨", i: "🌧️", hum: "85%", w: "东风 3级" },
+                    { t: 28, d: "多云转晴", i: "🌤️", hum: "52%", w: "南风 2级" },
+                    { t: 33, d: "烈日大晴天", i: "☀️", hum: "40%", w: "西南风 1级" }
+                ];
+                const selectedRandom = randomTemps[Math.floor(Math.random() * randomTemps.length)];
+                mockWeatherData[inputVal] = {
+                    temp: selectedRandom.t,
+                    desc: selectedRandom.d,
+                    icon: selectedRandom.i,
+                    humidity: selectedRandom.hum,
+                    wind: selectedRandom.w,
+                    tips: {
+                        clothing: `根据气温（${selectedRandom.t}°C），穿着透气吸汗的轻薄外套，夜间稍有降温请备薄风衣。`,
+                        necessity: "请准备好常用防身药品，随身遮阳伞或折叠轻雨具防不测之风雨。",
+                        activity: "天气指数总体温和，可以考虑多去具有城市文化积淀的历史景区转转。"
+                    },
+                    sevenDays: [
+                        { day: "周一", temp: `${selectedRandom.t-2}/${selectedRandom.t+2}°C`, desc: selectedRandom.d, icon: selectedRandom.i },
+                        { day: "周二", temp: `${selectedRandom.t-3}/${selectedRandom.t+1}°C`, desc: "多云", icon: "☁️" },
+                        { day: "周三", temp: `${selectedRandom.t-1}/${selectedRandom.t+3}°C`, desc: "晴天", icon: "☀️" },
+                        { day: "周四", temp: `${selectedRandom.t-2}/${selectedRandom.t+2}°C`, desc: "小雨", icon: "🌧️" },
+                        { day: "周五", temp: `${selectedRandom.t}/${selectedRandom.t+4}°C`, desc: "多云转晴", icon: "🌤️" },
+                        { day: "周六", temp: `${selectedRandom.t+1}/${selectedRandom.t+5}°C`, desc: "晴", icon: "☀️" },
+                        { day: "周日", temp: `${selectedRandom.t-1}/${selectedRandom.t+3}°C`, desc: "阴天", icon: "☁️" }
+                    ]
+                };
+
+                renderWeatherSection(inputVal);
+                showToast("已成功为您拉取并预估城市: " + inputVal);
+            }
+        }
+
+        // ======================= 工具函数 =======================
+        function formatDate(date) {
+            const y = date.getFullYear();
+            const yShort = String(y).substring(2);
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            return `${y}年${m}月${d}日`;
+        }
+
+        function showToast(message, type = "success") {
+            const container = document.getElementById("toast-container");
+            const toast = document.createElement("div");
+            const bgClass = type === "warning" ? "bg-amber-500" : "bg-slate-900";
+            
+            toast.className = `${bgClass} text-white text-sm font-medium px-5 py-3 rounded-xl shadow-2xl flex items-center space-x-2.5 mb-3 transition-all duration-300 opacity-0 transform translate-y-3 pointer-events-auto max-w-sm`;
+            toast.innerHTML = `
+                <span>${type === 'warning' ? '⚠️' : '✅'}</span>
+                <span>${message}</span>
+            `;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList
