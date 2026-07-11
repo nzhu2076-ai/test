@@ -1,2192 +1,806 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>VoyageEase - AI-Powered Smart Travel Planner</title>
-    
-    <!-- ================= PWA & iOS WebApp Meta Tags ================= -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="VoyageEase">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/201/201623.png">
-    
-    <!-- PWA Web Manifest (Inline Data URI) -->
-    <link rel="manifest" href='data:application/manifest+json,{"name":"VoyageEase Travel Planner","short_name":"VoyageEase","start_url":".","display":"standalone","background_color":"#0f172a","theme_color":"#0f172a","description":"AI-Powered Premium Travel Planner","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/201/201623.png","sizes":"512x512","type":"image/png"}]}'>
-    <meta name="theme-color" content="#0f172a">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScholarPilot | Literature Review Workspace</title>
+    <meta name="description" content="Upload your literature pool, extract structural findings instantly, and format citation-ready drafts.">
 
-    <!-- Tailwind CSS & Premium Inter Font -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600;6..72,700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        display: ['Newsreader', 'Georgia', 'serif'],
+                        sans: ['"Source Sans 3"', 'Segoe UI', 'sans-serif'],
+                    },
+                    colors: {
+                        ink: {
+                            950: '#071416',
+                            900: '#0c2428',
+                            800: '#14363b',
+                            700: '#1d4a50',
+                            600: '#2a6168',
+                        },
+                        sage: {
+                            50: '#f3f7f4',
+                            100: '#e4ece6',
+                            200: '#c8d8cc',
+                            400: '#6f9a7a',
+                            500: '#4f7d5c',
+                            600: '#3d6349',
+                            700: '#324f3c',
+                        },
+                        brass: {
+                            400: '#c9a66b',
+                            500: '#b8956c',
+                            600: '#9a7a52',
+                        },
+                        paper: {
+                            50: '#f7f9f8',
+                            100: '#eef2f1',
+                            200: '#dde5e3',
+                        }
+                    },
+                    boxShadow: {
+                        soft: '0 18px 40px -28px rgba(7, 20, 22, 0.45)',
+                    },
+                    keyframes: {
+                        rise: {
+                            '0%': { opacity: '0', transform: 'translateY(18px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        drift: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-8px)' },
+                        },
+                        shimmer: {
+                            '0%': { backgroundPosition: '0% 50%' },
+                            '100%': { backgroundPosition: '100% 50%' },
+                        }
+                    },
+                    animation: {
+                        rise: 'rise 0.8s ease-out both',
+                        'rise-delay': 'rise 0.9s ease-out 0.12s both',
+                        'rise-late': 'rise 1s ease-out 0.24s both',
+                        drift: 'drift 7s ease-in-out infinite',
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #eef2f1; }
+        ::-webkit-scrollbar-thumb { background: #9eb0ab; border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #6f8580; }
+
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            padding-top: env(safe-area-inset-top);
-            padding-bottom: env(safe-area-inset-bottom);
+            background-color: #eef2f1;
+            background-image:
+                radial-gradient(ellipse 80% 50% at 10% -10%, rgba(79, 125, 92, 0.12), transparent 55%),
+                radial-gradient(ellipse 60% 40% at 90% 0%, rgba(184, 149, 108, 0.10), transparent 50%),
+                linear-gradient(180deg, #f7f9f8 0%, #eef2f1 40%, #e8eeec 100%);
         }
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
+
+        .grain::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            opacity: 0.35;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.45'/%3E%3C/svg%3E");
+            mix-blend-mode: soft-light;
         }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.75);
+
+        .glass-bar {
+            background: rgba(247, 249, 248, 0.86);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
         }
+
+        .hero-plane {
+            background:
+                linear-gradient(105deg, rgba(7, 20, 22, 0.88) 0%, rgba(12, 36, 40, 0.72) 42%, rgba(12, 36, 40, 0.45) 100%),
+                url("https://images.unsplash.com/photo-1481627834876-b7833e8f6540?auto=format&fit=crop&w=2000&q=80") center/cover no-repeat;
+        }
+
+        .panel-rule {
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.55);
+        }
+
+        .tab-active {
+            background: #0c2428;
+            color: #f7f9f8;
+        }
+
+        .tab-idle {
+            color: #1d4a50;
+        }
+        .tab-idle:hover {
+            background: rgba(12, 36, 40, 0.06);
+        }
+
+        .paper-selected {
+            border-color: #3d6349;
+            background: linear-gradient(180deg, #f3f7f4 0%, #ffffff 100%);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .animate-rise,
+            .animate-rise-delay,
+            .animate-rise-late,
+            .animate-drift {
+                animation: none !important;
+            }
+        }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col pb-20 md:pb-0 md:flex-row">
+<body class="text-ink-900 font-sans min-h-screen flex flex-col antialiased selection:bg-sage-200 selection:text-ink-900">
 
-    <!-- 桌面端侧边栏导航 -->
-    <aside class="hidden md:flex flex-col w-64 bg-slate-950 text-white min-h-screen p-6 shadow-2xl shrink-0 border-r border-slate-900">
-        <div class="flex items-center space-x-3 mb-10 px-2">
-            <!-- Modern Gradient Jet Logo -->
-            <div class="p-2.5 bg-gradient-to-tr from-teal-400 to-emerald-500 rounded-xl shadow-lg shadow-teal-500/20">
-                <svg class="w-6 h-6 text-slate-950" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
-                </svg>
-            </div>
-            <div>
-                <h1 class="font-extrabold text-xl tracking-tight bg-gradient-to-r from-teal-400 to-emerald-400 bg-clip-text text-transparent">VoyageEase</h1>
-                <p class="text-[10px] text-slate-500 font-semibold tracking-wider uppercase">AI Co-Pilot V2.5</p>
-            </div>
+    <div id="toast" class="fixed top-6 right-6 z-50 transform -translate-y-24 opacity-0 transition-all duration-300 pointer-events-none">
+        <div class="bg-ink-900 text-paper-50 px-4 py-3 rounded-lg shadow-soft flex items-center gap-3 text-sm">
+            <i data-lucide="check-circle-2" class="w-4 h-4 text-sage-400"></i>
+            <span id="toast-message" class="font-medium">Action successful</span>
         </div>
+    </div>
 
-        <nav class="flex-1 space-y-1.5">
-            <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center space-x-3.5 px-4 py-3.5 rounded-xl transition-all duration-300 text-teal-400 bg-slate-900/80 font-medium">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z"></path></svg>
-                <span>Dashboard</span>
-            </button>
-            <button onclick="switchTab('itinerary')" id="nav-itinerary" class="nav-item w-full flex items-center space-x-3.5 px-4 py-3.5 rounded-xl transition-all duration-300 text-slate-400 hover:bg-slate-900 hover:text-white font-medium">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                <span>Itinerary Planner</span>
-            </button>
-            <button onclick="switchTab('exchange')" id="nav-exchange" class="nav-item w-full flex items-center space-x-3.5 px-4 py-3.5 rounded-xl transition-all duration-300 text-slate-400 hover:bg-slate-900 hover:text-white font-medium">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <span>Currency Center</span>
-            </button>
-            <button onclick="switchTab('weather')" id="nav-weather" class="nav-item w-full flex items-center space-x-3.5 px-4 py-3.5 rounded-xl transition-all duration-300 text-slate-400 hover:bg-slate-900 hover:text-white font-medium">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path></svg>
-                <span>Live Weather</span>
-            </button>
-        </nav>
+    <script>
+        const mockPapers = [
+            {
+                id: "paper-1",
+                title: "The Impact of Large Language Models on Higher Education Assessment: Opportunities and Threats",
+                author: "Chen, L. & Wang, J.",
+                year: "2025",
+                questions: "To analyze how assessment structures must adapt to prevent AI plagiarism while harnessing human-AI collaborative workflows.",
+                methodology: "Mixed-Methods: Quantitative student surveys (n=420) coupled with 15 pedagogical expert interviews.",
+                findings: "Traditional open essays are highly vulnerable. Adding process-based defense checks boosts critical scoring indices by 14%.",
+                limitations: "Primarily confined to well-funded Tier-1 research institutions; excludes vocational or localized colleges.",
+                utility: "Use this to back up arguments on why traditional exams must shift towards continuous assessments.",
+                quotes: "“AI integration, rather than outright bans, optimizes continuous process-based student evaluations.”",
+                shortLabel: "Chen et al. (2025)",
+                shortDesc: "Impact of LLMs on Higher Ed Assessment",
+                matrixFocus: "Re-evaluating examination vulnerabilities in the LLM-dominated era.",
+                matrixMethod: "Mixed methods (Surveying n=420 professors, 15 qualitative academic experts).",
+                matrixFindings: "Standard essays fail; oral defenses or continuous grading raises student evaluation validity by 14%."
+            },
+            {
+                id: "paper-2",
+                title: "Evaluating RAG Performance in Academic Knowledge Extraction vs. Direct Large Language Model Prompting",
+                author: "Miller, T., Davis, R. & Park, S.",
+                year: "2026",
+                questions: "To benchmark fact-extraction precision and determine how Retrieval-Augmented Generation limits citation hallucination.",
+                methodology: "Experimental benchmarking testing 7 distinct LLMs across a verified corpus of 500 open-access peer papers.",
+                findings: "RAG raises citation extraction accuracy to 97.8%, while standard prompting yields up to 34% hallucination on long contexts.",
+                limitations: "Analyzed documents were cleanly structured digital PDFs; scanned layout variants were excluded.",
+                utility: "Ideal citation to justify using specialized database tools rather than querying generic AI assistants.",
+                quotes: "“Vector-constrained lookup is currently the premium defense against factual academic hallucinations.”",
+                shortLabel: "Miller et al. (2026)",
+                shortDesc: "Evaluating RAG Performance in Academic Knowledge",
+                matrixFocus: "Comparing fact-retrieval mechanisms and mitigation of AI hallucination thresholds.",
+                matrixMethod: "Quantitative test-bed (500 papers ran across 7 leading text-generation nodes).",
+                matrixFindings: "RAG configurations output 97.8% accurate lookups; plain text prompt generators create 34% fake citations."
+            }
+        ];
+    </script>
 
-        <!-- 侧边栏专属：添加到手机桌面组件 -->
-        <button onclick="openPwaGuide()" class="mb-5 w-full flex items-center justify-center space-x-2 px-4 py-3 bg-teal-500/10 hover:bg-teal-500/20 text-teal-400 rounded-xl transition border border-teal-500/20 text-xs font-semibold">
-            <span>📲 Install Mobile WebApp</span>
-        </button>
+    <header class="sticky top-0 z-40 glass-bar border-b border-ink-900/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <a href="#top" class="flex items-center gap-3 group">
+                <div class="w-9 h-9 bg-ink-900 rounded-md flex items-center justify-center transition-transform group-hover:scale-105">
+                    <i data-lucide="book-open" class="text-paper-50 w-5 h-5"></i>
+                </div>
+                <div>
+                    <span class="font-display font-semibold text-ink-900 tracking-tight text-lg leading-none">ScholarPilot</span>
+                    <span class="text-[10px] text-ink-600 font-medium block leading-none mt-1 tracking-wide uppercase">Literature Review Workspace</span>
+                </div>
+            </a>
 
-        <!-- 用户卡片 -->
-        <div class="border-t border-slate-800 pt-5 flex items-center space-x-3">
-            <img class="w-10 h-10 rounded-full border border-slate-800" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" alt="Explorer Profile">
-            <div>
-                <p class="text-sm font-bold">Sophia Martinez</p>
-                <p class="text-[10px] text-slate-500">Premium Explorer</p>
-            </div>
+            <nav class="hidden md:flex items-center gap-7 text-sm font-semibold text-ink-700">
+                <a href="#how-it-works" class="hover:text-sage-600 transition-colors">How it Works</a>
+                <a href="#workspace" class="hover:text-sage-600 text-sage-600 transition-colors flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 bg-sage-500 rounded-full animate-pulse"></span>
+                    Interactive Tool
+                </a>
+                <a href="#pricing" class="hover:text-sage-600 transition-colors">Pricing</a>
+            </nav>
+
+            <a href="#workspace" class="bg-ink-900 hover:bg-ink-800 text-paper-50 px-4 py-2 rounded-md text-sm font-semibold transition-all active:scale-95">
+                Get Started
+            </a>
         </div>
-    </aside>
+    </header>
 
-    <!-- 移动端底部导航栏 -->
-    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-950 border-t border-slate-900 flex justify-around py-3 px-1 z-50 shadow-2xl text-white pb-[calc(12px+env(safe-area-inset-bottom))]">
-        <button onclick="switchTab('dashboard')" id="mob-dashboard" class="flex flex-col items-center space-y-0.5 text-teal-400">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z"></path></svg>
-            <span class="text-[10px] font-semibold">Dashboard</span>
-        </button>
-        <button onclick="switchTab('itinerary')" id="mob-itinerary" class="flex flex-col items-center space-y-0.5 text-slate-500">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-            <span class="text-[10px] font-semibold">Plans</span>
-        </button>
-        <button onclick="switchTab('exchange')" id="mob-exchange" class="flex flex-col items-center space-y-0.5 text-slate-500">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            <span class="text-[10px] font-semibold">Exchange</span>
-        </button>
-        <button onclick="switchTab('weather')" id="mob-weather" class="flex flex-col items-center space-y-0.5 text-slate-500">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path></svg>
-            <span class="text-[10px] font-semibold">Weather</span>
-        </button>
-    </nav>
+    <main id="top" class="flex-1">
 
-    <!-- 主展示面板 -->
-    <main class="flex-1 flex flex-col min-h-screen overflow-y-auto bg-slate-50 relative pb-10">
-        
-        <header class="bg-white border-b border-slate-200 px-6 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-3 sm:space-y-0">
-            <div>
-                <p class="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest">VoyageEase Smart Workspace</p>
-                <h2 id="header-title" class="text-2xl font-black text-slate-900">Adventure Hub</h2>
-            </div>
-            
-            <!-- 控制与配置按钮区域 -->
-            <div class="flex items-center space-x-2.5 w-full sm:w-auto">
-                <select id="trip-selector" onchange="changeCurrentTrip(this.value)" class="bg-slate-100 text-slate-900 font-bold border-0 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-teal-500 outline-none cursor-pointer w-full sm:w-64 text-sm">
-                    <!-- 动态生成 -->
-                </select>
-                <!-- 新增行程 -->
-                <button onclick="openNewTripModal()" class="bg-teal-500 hover:bg-teal-600 text-white font-bold p-2.5 rounded-xl transition shadow-lg shadow-teal-500/15 shrink-0" title="Add New Trip">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
-                </button>
-                <!-- 修改基础信息 -->
-                <button onclick="openEditTripModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold p-2.5 rounded-xl transition shadow-lg shadow-indigo-500/15 shrink-0" title="Edit Trip Info">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                </button>
-                <!-- 导出社交分享（小红书/LinkedIn） -->
-                <button onclick="openSocialGenerator()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-3 py-2 rounded-xl transition shadow-lg shrink-0 text-sm flex items-center space-x-1" title="Generate Social Post">
-                    <span>✨</span> <span class="hidden md:inline">Share Card</span>
-                </button>
-            </div>
-        </header>
-
-        <div id="toast-container" class="fixed top-5 right-5 z-[70] pointer-events-none transition-all duration-300"></div>
-
-        <!-- ======================= 1. DASHBOARD TAB ======================= -->
-        <section id="tab-dashboard-view" class="p-6 space-y-6">
-            
-            <!-- Modern PWA Banner (Only shows when mobile webapp is not installed) -->
-            <div id="pwa-mobile-banner" class="bg-slate-950 text-white p-4.5 rounded-2xl flex items-center justify-between shadow-xl border border-slate-900">
-                <div class="flex items-center space-x-3.5">
-                    <span class="text-3xl">📱</span>
-                    <div>
-                        <h4 class="text-sm font-extrabold text-slate-100">Add to Home Screen for Premium Native App Experience</h4>
-                        <p class="text-xs text-slate-500">Zero browser address bar, seamless full-screen layout, and quick travel offline check.</p>
-                    </div>
-                </div>
-                <button onclick="openPwaGuide()" class="bg-teal-400 hover:bg-teal-500 text-slate-950 font-extrabold px-4 py-2 rounded-xl text-xs transition shrink-0">
-                    Get App
-                </button>
-            </div>
-
-            <!-- Header Premium Banner -->
-            <div class="relative overflow-hidden bg-gradient-to-r from-slate-900 via-teal-950 to-emerald-950 rounded-3xl text-white p-8 shadow-xl shadow-teal-950/15 border border-teal-500/10">
-                <div class="absolute right-0 bottom-0 opacity-[0.08] pointer-events-none transform translate-x-12 translate-y-12">
-                    <svg class="w-96 h-96" fill="currentColor" viewBox="0 0 24 24"><path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
-                </div>
-                <div class="relative z-10 flex flex-col lg:flex-row justify-between items-start lg:items-center">
-                    <div>
-                        <span class="inline-block bg-teal-500/20 text-teal-300 text-xs font-bold px-3 py-1 rounded-full mb-3 uppercase tracking-wider">Ready to Depart</span>
-                        <h3 id="dash-trip-name" class="text-3xl font-black mb-1.5 leading-tight">Elite Travel Experience</h3>
-                        <p id="dash-trip-dates" class="text-teal-200/80 text-sm font-medium">--- --, 2026 - --- --, 2026</p>
-                    </div>
-                    <div class="mt-6 lg:mt-0 bg-white/5 backdrop-blur-md rounded-2xl p-4.5 text-center border border-white/10 min-w-[150px]">
-                        <p class="text-xs text-teal-300 font-semibold uppercase tracking-wider">Departure Countdown</p>
-                        <p id="dash-countdown" class="text-4xl font-black text-white mt-1">--</p>
-                        <p class="text-[10px] text-teal-200 uppercase font-bold tracking-widest mt-0.5">Days Left</p>
-                    </div>
+        <!-- Full-bleed brand hero -->
+        <section class="relative hero-plane grain min-h-[78vh] flex items-end text-paper-50 overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-t from-ink-950/80 via-transparent to-ink-950/20"></div>
+            <div class="relative max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-24 pb-16 md:pb-20">
+                <p class="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight animate-rise">
+                    ScholarPilot
+                </p>
+                <h1 class="mt-4 max-w-2xl font-display text-2xl sm:text-3xl md:text-4xl font-medium leading-snug text-paper-50/95 animate-rise-delay">
+                    Read 20+ academic papers in 10 minutes flat.
+                </h1>
+                <p class="mt-4 max-w-xl text-base sm:text-lg text-paper-100/80 leading-relaxed animate-rise-late">
+                    Upload your literature pool, extract structural findings instantly, and format citation-perfect drafts without AI hallucinations.
+                </p>
+                <div class="mt-8 flex flex-col sm:flex-row gap-3 animate-rise-late">
+                    <a href="#workspace" class="inline-flex items-center justify-center gap-2 bg-sage-500 hover:bg-sage-600 text-white px-6 py-3 rounded-md text-sm font-semibold transition-all">
+                        Launch Free Simulator <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </a>
+                    <a href="#how-it-works" class="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 border border-white/25 text-paper-50 px-6 py-3 rounded-md text-sm font-semibold transition-all backdrop-blur-sm">
+                        Methodology Guide
+                    </a>
                 </div>
             </div>
-
-            <!-- Smart Metrics Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Budget Card -->
-                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col justify-between">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="p-3 bg-rose-50 rounded-xl text-rose-500">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                        </div>
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Active Budget Tracker</span>
-                    </div>
-                    <div>
-                        <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1">Spent / Total Budget Allocation</p>
-                        <div class="flex items-baseline space-x-1.5 mb-3">
-                            <span id="dash-spent" class="text-2xl font-black text-slate-900">£ 0</span>
-                            <span class="text-slate-400 text-sm">/</span>
-                            <span id="dash-budget" class="text-slate-500 font-semibold text-sm">£ 0</span>
-                        </div>
-                        <div class="w-full bg-slate-100 rounded-full h-2.5">
-                            <div id="dash-budget-progress" class="bg-teal-500 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Live Weather Card -->
-                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col justify-between">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="p-3 bg-blue-50 rounded-xl text-blue-500">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path></svg>
-                        </div>
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Live Weather Hub</span>
-                    </div>
-                    <div>
-                        <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1">Destination · <span id="dash-city-name" class="font-bold text-slate-600">--</span></p>
-                        <div class="flex items-center space-x-3">
-                            <span id="dash-weather-temp" class="text-3xl font-black text-slate-900">--°C</span>
-                            <div class="flex items-center space-x-1 bg-slate-100 px-2.5 py-1 rounded-lg">
-                                <span id="dash-weather-icon" class="text-base">☀️</span>
-                                <span id="dash-weather-desc" class="text-xs font-bold text-slate-600">Sunny</span>
-                            </div>
-                        </div>
-                        <button onclick="switchTab('weather')" class="text-xs text-teal-600 hover:text-teal-700 font-bold mt-3.5 inline-flex items-center space-x-1 transition">
-                            <span>Check packing tips & forecasts</span>
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Premium Exchange Rate -->
-                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col justify-between">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="p-3 bg-indigo-50 rounded-xl text-indigo-500">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        </div>
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Global Forex Engine</span>
-                    </div>
-                    <div>
-                        <div class="space-y-1.5">
-                            <div class="flex justify-between text-xs">
-                                <span class="text-slate-400 font-medium">1 GBP equals</span>
-                                <span id="dash-rate-usd" class="font-extrabold text-slate-700">-- USD</span>
-                            </div>
-                            <div class="flex justify-between text-xs">
-                                <span class="text-slate-400 font-medium">1 GBP equals</span>
-                                <span id="dash-rate-jpy" class="font-extrabold text-slate-700">-- JPY</span>
-                            </div>
-                        </div>
-                        <button onclick="switchTab('exchange')" class="text-xs text-teal-600 hover:text-teal-700 font-bold mt-3.5 inline-flex items-center space-x-1 transition">
-                            <span>Open smart calculator</span>
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
-                        </button>
-                    </div>
-                </div>
+            <div class="pointer-events-none absolute right-8 top-28 hidden lg:block animate-drift opacity-70">
+                <div class="w-40 h-52 border border-white/20 bg-white/5 backdrop-blur-sm rotate-6"></div>
             </div>
+        </section>
 
-            <!-- TWO COLUMN PREMIUM DASHBOARD EXTENSION (Ideal for LinkedIn sharing) -->
-            <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
-                <!-- Column 1: Eco & Travel Insights (Hobby/Business Nomads Favorite) (3/5 width) -->
-                <div class="lg:col-span-3 bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col justify-between">
-                    <div>
-                        <h4 class="font-bold text-slate-900 text-lg mb-1">Smart Travel Insights 🍃</h4>
-                        <p class="text-xs text-slate-400 mb-5">AI evaluation based on current flight transit, duration, and metrics.</p>
-                        
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                            <!-- Metric 1: Eco Footprint -->
-                            <div class="bg-emerald-50/50 p-4 rounded-xl border border-emerald-100">
-                                <p class="text-[10px] font-bold uppercase tracking-widest text-emerald-600">Eco CO2 Offset</p>
-                                <p class="text-2xl font-black text-emerald-800 mt-1">14.2 kg</p>
-                                <p class="text-[9px] text-emerald-500 mt-1 font-semibold">Equivalent to 2 trees planted</p>
-                            </div>
-                            <!-- Metric 2: Smart Packing Progress -->
-                            <div class="bg-indigo-50/50 p-4 rounded-xl border border-indigo-100">
-                                <p class="text-[10px] font-bold uppercase tracking-widest text-indigo-600">Packing Readiness</p>
-                                <p id="packing-rate-display" class="text-2xl font-black text-indigo-800 mt-1">60%</p>
-                                <div class="w-full bg-slate-200 rounded-full h-1.5 mt-2">
-                                    <div id="packing-progress-bar" class="bg-indigo-600 h-1.5 rounded-full" style="width: 60%"></div>
+        <!-- Interactive Workspace -->
+        <section id="workspace" class="py-14 md:py-20">
+            <div class="max-w-6xl mx-auto px-4 sm:px-6">
+                <div class="mb-10 max-w-2xl">
+                    <h2 class="font-display text-3xl sm:text-4xl font-semibold text-ink-900 tracking-tight">Literature Review Assistant</h2>
+                    <p class="text-ink-600 mt-2 text-base">Upload files, select papers, and extract insights in one focused workspace.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+                    <!-- LEFT: Upload & Select -->
+                    <div class="lg:col-span-4 space-y-6">
+                        <div class="panel-rule bg-paper-50/90 border border-ink-900/10 rounded-lg p-5">
+                            <h3 class="text-xs font-bold uppercase tracking-[0.14em] text-ink-600 mb-3 flex items-center gap-1.5">
+                                <i data-lucide="upload" class="w-3.5 h-3.5 text-sage-600"></i> Step 1: Upload PDFs
+                            </h3>
+
+                            <div class="relative border border-dashed border-ink-900/20 hover:border-sage-500 rounded-md p-5 text-center cursor-pointer transition-all bg-white/70 hover:bg-sage-50/60 group">
+                                <input type="file" id="file-input" class="absolute inset-0 opacity-0 cursor-pointer" accept=".pdf" onchange="handleFileUpload(event)">
+                                <div class="flex flex-col items-center">
+                                    <i data-lucide="file-up" class="text-ink-600 group-hover:text-sage-600 w-6 h-6 mb-1.5 transition-colors"></i>
+                                    <span class="text-sm font-semibold text-ink-900">Choose PDF Document</span>
+                                    <span class="text-xs text-ink-600 mt-1">Maximum size 30MB</span>
                                 </div>
                             </div>
-                            <!-- Metric 3: Health Score -->
-                            <div class="bg-amber-50/50 p-4 rounded-xl border border-amber-100">
-                                <p class="text-[10px] font-bold uppercase tracking-widest text-amber-600">Travel Health Index</p>
-                                <p class="text-2xl font-black text-amber-800 mt-1">94%</p>
-                                <p class="text-[9px] text-amber-600 mt-1 font-semibold">Low UV and optimal hydration</p>
+
+                            <div id="loader-box" class="hidden mt-3 p-3 rounded-md bg-sage-50 border border-sage-200 flex items-center gap-2.5">
+                                <div class="w-4 h-4 border-2 border-sage-600 border-t-transparent rounded-full animate-spin"></div>
+                                <div class="text-xs">
+                                    <p class="font-bold text-ink-900" id="loader-title">Extracting...</p>
+                                    <p class="text-ink-600" id="loader-desc">Please wait.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="panel-rule bg-paper-50/90 border border-ink-900/10 rounded-lg p-5">
+                            <h3 class="text-xs font-bold uppercase tracking-[0.14em] text-ink-600 mb-3 flex items-center gap-1.5">
+                                <i data-lucide="library" class="w-3.5 h-3.5 text-sage-600"></i> Step 2: Choose Paper
+                            </h3>
+
+                            <div class="space-y-2.5" id="paper-list-container">
+                                <button onclick="selectPaper('paper-1')" id="list-paper-1" class="w-full text-left p-3 rounded-md border paper-selected transition-all relative text-sm">
+                                    <div class="absolute top-3 right-3 w-1.5 h-1.5 bg-sage-500 rounded-full"></div>
+                                    <p class="font-bold text-ink-900 line-clamp-1">Chen et al. (2025)</p>
+                                    <p class="text-xs text-ink-600 mt-0.5 line-clamp-1">Impact of LLMs on Higher Ed Assessment</p>
+                                </button>
+
+                                <button onclick="selectPaper('paper-2')" id="list-paper-2" class="w-full text-left p-3 rounded-md border border-ink-900/10 bg-white hover:bg-sage-50/50 transition-all text-sm">
+                                    <p class="font-bold text-ink-800 line-clamp-1">Miller et al. (2026)</p>
+                                    <p class="text-xs text-ink-600 mt-0.5 line-clamp-1">Evaluating RAG Performance in Academic Knowledge</p>
+                                </button>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Visual Fancy Bar Chart explaining Budget Category split -->
-                    <div class="mt-6 border-t border-slate-100 pt-5">
-                        <h5 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3.5">Budget Allocation Splitting</h5>
-                        <div id="dashboard-category-split-bar" class="w-full h-5 rounded-full bg-slate-100 flex overflow-hidden">
-                            <!-- Dynamic Split Bars will render in JS -->
-                        </div>
-                        <div id="dashboard-category-split-legend" class="flex flex-wrap gap-4 mt-3 text-[10px] font-bold text-slate-500">
-                            <!-- Legend loaded dynamically -->
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Column 2: Smart Packing List Checklist (2/5 width) -->
-                <div class="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col justify-between">
-                    <div>
-                        <div class="flex justify-between items-center mb-4">
-                            <div>
-                                <h4 class="font-bold text-slate-900 text-lg">Interactive Packing List 🧳</h4>
-                                <p class="text-xs text-slate-400">Keep track of your essentials before departing.</p>
+                    <!-- RIGHT: Content view -->
+                    <div class="lg:col-span-8 flex flex-col space-y-5">
+                        <div class="panel-rule bg-paper-50/90 border border-ink-900/10 rounded-lg p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+                            <div class="text-center sm:text-left">
+                                <span class="text-[10px] tracking-wider uppercase text-ink-600 font-bold">Current View</span>
+                                <h3 id="active-title-meta" class="text-sm font-bold text-ink-900 mt-0.5 line-clamp-1">Chen et al. (2025)</h3>
                             </div>
-                            <button onclick="resetPackingChecklist()" class="text-[10px] font-extrabold text-indigo-600 bg-indigo-50 px-2.5 py-1.5 rounded-lg hover:bg-indigo-100 transition">Reset</button>
-                        </div>
 
-                        <!-- Checkbox Container -->
-                        <div id="packing-checklist-items" class="space-y-2.5 max-h-[220px] overflow-y-auto pr-1">
-                            <!-- Dynamic checklist checkboxes -->
-                        </div>
-                    </div>
-
-                    <!-- Prompt-like interactive add task to checklist -->
-                    <div class="flex space-x-2 mt-4 border-t border-slate-100 pt-4">
-                        <input type="text" id="new-packing-item-input" placeholder="Add custom item..." class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs outline-none focus:ring-2 focus:ring-teal-500">
-                        <button onclick="addCustomPackingItem()" class="bg-teal-500 hover:bg-teal-600 text-white font-bold px-3 py-2 rounded-xl text-xs transition shadow-md">Add</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- First Day Itinerary Preview -->
-            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-                <div class="flex justify-between items-center mb-5">
-                    <h4 class="font-black text-slate-900 text-lg">First Day Itinerary Highlight</h4>
-                    <button onclick="switchTab('itinerary')" class="text-xs text-teal-600 hover:text-teal-700 font-bold inline-flex items-center space-x-1 transition">
-                        <span>Edit Full Schedule</span>
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
-                    </button>
-                </div>
-                <div id="dash-today-events" class="space-y-4 relative before:absolute before:bottom-2 before:top-2 before:left-[15px] before:w-[2px] before:bg-slate-100">
-                    <!-- Day 1 Event Highlight -->
-                </div>
-            </div>
-        </section>
-
-        <!-- ======================= 2. ITINERARY PLANNING TAB ======================= -->
-        <section id="tab-itinerary-view" class="p-6 space-y-6 hidden">
-            <!-- Stat Header Overview -->
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-6 rounded-2xl border border-slate-100 shadow-sm gap-4">
-                <div class="flex flex-wrap gap-4 sm:gap-8">
-                    <div>
-                        <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider">Adventure Duration</p>
-                        <p id="itin-stat-days" class="text-xl font-black text-slate-900">0 Days</p>
-                    </div>
-                    <div class="h-10 w-[1px] bg-slate-200 self-center hidden sm:block"></div>
-                    <div>
-                        <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider">Total Planned Expenses</p>
-                        <p id="itin-stat-spent" class="text-xl font-black text-rose-500">£ 0</p>
-                    </div>
-                    <div class="h-10 w-[1px] bg-slate-200 self-center hidden sm:block"></div>
-                    <div>
-                        <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider">Major Expense Node</p>
-                        <p id="itin-stat-category" class="text-sm font-bold text-teal-600 bg-teal-50 px-3 py-1.5 rounded-xl mt-0.5">Calculating...</p>
-                    </div>
-                </div>
-                <div class="flex space-x-2 w-full sm:w-auto">
-                    <button onclick="openActivityModal()" class="flex-1 sm:flex-none bg-teal-500 hover:bg-teal-600 text-white font-bold px-4 py-3 rounded-xl transition shadow-lg shadow-teal-500/15 flex items-center justify-center space-x-2 text-xs uppercase tracking-wider">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
-                        <span>Add Event Location</span>
-                    </button>
-                    <button onclick="deleteCurrentTrip()" class="bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-100 font-bold px-4 py-3 rounded-xl transition flex items-center justify-center space-x-1.5 text-xs uppercase tracking-wider" title="Delete entire Trip">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                        <span>Delete</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Stepper Day-by-Day Journey Control -->
-            <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Journey Steps Timeline</p>
-                
-                <div class="relative flex items-center justify-between overflow-x-auto no-scrollbar pb-3 pt-2">
-                    <div class="absolute top-[28px] left-6 right-6 h-[3px] bg-slate-100 -z-0"></div>
-                    <div id="itin-nav-progress" class="absolute top-[28px] left-6 h-[3px] bg-gradient-to-r from-teal-500 to-emerald-500 transition-all duration-300 -z-0" style="width: 0%"></div>
-                    
-                    <div id="itin-nav-steps-container" class="w-full flex justify-between items-center z-10 min-w-[650px]">
-                        <!-- Dynamic Steppers -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- Main Layout: Footprint and Daily Activities -->
-            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                <!-- Map Footprints Map Component -->
-                <div class="lg:col-span-1 bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-5 flex flex-col justify-between h-fit">
-                    <div>
-                        <div class="flex items-center space-x-2.5 border-b border-slate-100 pb-3 mb-3">
-                            <span class="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                </svg>
-                            </span>
-                            <div>
-                                <h4 class="font-extrabold text-slate-900 text-sm">Trip Footprint Map</h4>
-                                <p class="text-[10px] text-slate-400">Chronological trail route</p>
+                            <div class="flex bg-ink-900/5 p-1 rounded-md text-xs sm:text-sm flex-wrap justify-center">
+                                <button onclick="switchTab('tab-summary')" id="btn-tab-summary" class="px-3 py-1.5 rounded font-semibold transition-all tab-active flex items-center gap-1.5">
+                                    <i data-lucide="file-text" class="w-3.5 h-3.5"></i> Single Extract
+                                </button>
+                                <button onclick="switchTab('tab-matrix')" id="btn-tab-matrix" class="px-3 py-1.5 rounded font-semibold transition-all tab-idle flex items-center gap-1.5">
+                                    <i data-lucide="columns" class="w-3.5 h-3.5"></i> Matrix Compare
+                                </button>
+                                <button onclick="switchTab('tab-writer')" id="btn-tab-writer" class="px-3 py-1.5 rounded font-semibold transition-all tab-idle flex items-center gap-1.5">
+                                    <i data-lucide="pen-tool" class="w-3.5 h-3.5"></i> Draft Helper
+                                </button>
                             </div>
                         </div>
 
-                        <!-- Locations trail list -->
-                        <div id="itin-locations-list" class="space-y-2.5 max-h-[220px] overflow-y-auto pr-1 no-scrollbar">
-                            <!-- Dynamic location list -->
-                        </div>
-                    </div>
+                        <!-- TAB 1 -->
+                        <div id="panel-summary" class="space-y-5 block">
+                            <div class="bg-ink-900 text-paper-50 p-6 md:p-7 rounded-lg relative overflow-hidden">
+                                <div class="absolute left-0 top-0 bottom-0 w-1 bg-brass-500"></div>
+                                <h2 id="active-title" class="font-display text-xl sm:text-2xl font-semibold leading-snug pr-2">The Impact of Large Language Models on Higher Education Assessment: Opportunities and Threats</h2>
+                                <p id="active-meta" class="text-sm font-semibold text-brass-400 mt-2">Chen, L. & Wang, J. (2025)</p>
+                            </div>
 
-                    <!-- SVG Route Canvas Representation -->
-                    <div class="bg-slate-50 border border-slate-100 rounded-2xl p-3.5 flex flex-col items-center">
-                        <span class="text-xs font-bold text-slate-500 mb-2">Transit Route Vector Diagram</span>
-                        <div class="relative w-full h-32 flex items-center justify-center">
-                            <svg id="route-svg-line" class="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
-                                <!-- Rendered dynamically by JS -->
-                            </svg>
-                        </div>
-                        <span class="text-[9px] text-slate-400 mt-2 text-center font-medium">Automatic optimization path by coordinates</span>
-                    </div>
-                </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div class="border-t-2 border-brass-500/70 pt-4">
+                                    <div class="flex items-center gap-2 mb-2 text-ink-600">
+                                        <i data-lucide="help-circle" class="w-4 h-4 text-brass-600"></i>
+                                        <span class="text-[10px] font-bold uppercase tracking-[0.14em]">Research Purpose</span>
+                                    </div>
+                                    <p id="active-q" class="text-sm text-ink-800 leading-relaxed">To analyze how assessment structures must adapt to prevent AI plagiarism while harnessing human-AI collaborative workflows.</p>
+                                </div>
 
-                <!-- Daily Schedule detailed container -->
-                <div class="lg:col-span-3 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-                    <div class="flex justify-between items-center mb-6">
-                        <div>
-                            <h3 id="itin-current-day-title" class="text-xl font-black text-slate-900">Day 1 Schedule</h3>
-                            <p id="itin-current-day-date" class="text-xs text-slate-400 mt-1">Date: --- --, 2026</p>
-                        </div>
-                        <span id="itin-current-day-budget" class="text-xs font-extrabold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full">Daily Cost Allocation: £0</span>
-                    </div>
+                                <div class="border-t-2 border-sage-500/70 pt-4">
+                                    <div class="flex items-center gap-2 mb-2 text-ink-600">
+                                        <i data-lucide="git-fork" class="w-4 h-4 text-sage-600"></i>
+                                        <span class="text-[10px] font-bold uppercase tracking-[0.14em]">Methodology & Sample</span>
+                                    </div>
+                                    <p id="active-method" class="text-sm text-ink-800 leading-relaxed">Mixed-Methods: Quantitative student surveys (n=420) coupled with 15 pedagogical expert interviews.</p>
+                                </div>
 
-                    <div id="itin-events-list" class="space-y-6 relative before:absolute before:bottom-2 before:top-2 before:left-[17px] before:w-[2px] before:bg-slate-100">
-                        <!-- Dynamic schedule detailed events -->
-                    </div>
-                </div>
-            </div>
-        </section>
+                                <div class="border-t-2 border-sage-500/70 pt-4">
+                                    <div class="flex items-center gap-2 mb-2 text-ink-600">
+                                        <i data-lucide="award" class="w-4 h-4 text-sage-600"></i>
+                                        <span class="text-[10px] font-bold uppercase tracking-[0.14em]">Core Finding</span>
+                                    </div>
+                                    <p id="active-findings" class="text-sm text-ink-800 leading-relaxed">Traditional open essays are highly vulnerable. Adding process-based defense checks boosts critical scoring indices by 14%.</p>
+                                </div>
 
-        <!-- ======================= 3. CURRENCY CENTER TAB ======================= -->
-        <section id="tab-exchange-view" class="p-6 space-y-6 hidden">
-            <!-- Exchange rate converter -->
-            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-                <h3 class="text-lg font-black text-slate-900 mb-6 flex items-center space-x-2.5">
-                    <span class="p-2 bg-teal-50 text-teal-600 rounded-xl">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
-                    </span>
-                    <span>Global Currency Converter</span>
-                </h3>
+                                <div class="border-t-2 border-ink-700/40 pt-4">
+                                    <div class="flex items-center gap-2 mb-2 text-ink-600">
+                                        <i data-lucide="alert-circle" class="w-4 h-4 text-ink-700"></i>
+                                        <span class="text-[10px] font-bold uppercase tracking-[0.14em]">Limitation</span>
+                                    </div>
+                                    <p id="active-limit" class="text-sm text-ink-800 leading-relaxed">Primarily confined to well-funded Tier-1 research institutions; excludes vocational or localized colleges.</p>
+                                </div>
+                            </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-7 gap-4 items-center">
-                    <!-- Source input -->
-                    <div class="md:col-span-3 space-y-1.5">
-                        <label class="text-xs text-slate-400 font-extrabold uppercase tracking-wider">Source Currency (From)</label>
-                        <div class="relative flex">
-                            <select id="exc-from-currency" onchange="convertCurrency()" class="bg-slate-50 border border-slate-200 rounded-l-xl px-3 py-3 text-slate-800 font-bold outline-none focus:border-teal-500 text-sm">
-                                <option value="GBP" selected>GBP - British Pound</option>
-                                <option value="USD">USD - US Dollar</option>
-                                <option value="EUR">EUR - Euro</option>
-                                <option value="JPY">JPY - Japanese Yen</option>
-                                <option value="KRW">KRW - Korean Won</option>
-                                <option value="CNY">CNY - Renminbi</option>
-                            </select>
-                            <input type="number" id="exc-from-amount" value="100" oninput="convertCurrency()" class="flex-1 bg-slate-50 border border-l-0 border-slate-200 rounded-r-xl px-4 py-3 text-lg font-extrabold outline-none focus:ring-1 focus:ring-teal-500 text-slate-800" placeholder="Amount">
-                        </div>
-                    </div>
-
-                    <!-- Swap -->
-                    <div class="md:col-span-1 flex justify-center pt-5 md:pt-0">
-                        <button onclick="swapCurrencies()" class="bg-teal-50 hover:bg-teal-100 text-teal-600 p-3.5 rounded-full transition transform hover:rotate-180 duration-500 shadow-md">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
-                        </button>
-                    </div>
-
-                    <!-- Target Currency -->
-                    <div class="md:col-span-3 space-y-1.5">
-                        <label class="text-xs text-slate-400 font-extrabold uppercase tracking-wider">Target Currency (To)</label>
-                        <div class="relative flex">
-                            <select id="exc-to-currency" onchange="convertCurrency()" class="bg-slate-50 border border-slate-200 rounded-l-xl px-3 py-3 text-slate-800 font-bold outline-none focus:border-teal-500 text-sm">
-                                <option value="GBP">GBP - British Pound</option>
-                                <option value="USD">USD - US Dollar</option>
-                                <option value="EUR">EUR - Euro</option>
-                                <option value="JPY" selected>JPY - Japanese Yen</option>
-                                <option value="KRW">KRW - Korean Won</option>
-                                <option value="CNY">CNY - Renminbi</option>
-                            </select>
-                            <div id="exc-to-amount" class="flex-1 bg-slate-100 border border-l-0 border-slate-200 rounded-r-xl px-4 py-3 text-lg font-black flex items-center text-slate-900">
-                                0.00
+                            <div class="bg-ink-900 text-paper-50 p-5 rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                                <div class="flex gap-3">
+                                    <i data-lucide="message-square" class="w-5 h-5 text-brass-400 shrink-0"></i>
+                                    <div>
+                                        <h4 class="text-sm font-bold">How to cite this</h4>
+                                        <p id="active-utility" class="text-sm text-paper-100/75 mt-0.5">Use this to back up arguments on why traditional exams must shift towards continuous assessments.</p>
+                                    </div>
+                                </div>
+                                <button onclick="copyCitationText()" class="shrink-0 bg-white/10 hover:bg-white/15 border border-white/15 text-paper-50 px-3 py-1.5 rounded-md text-sm font-semibold transition-all flex items-center gap-1.5">
+                                    <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy Citation
+                                </button>
                             </div>
                         </div>
-                    </div>
-                </div>
 
-                <div class="mt-4 text-center">
-                    <p class="text-xs text-slate-400 font-medium">
-                        Reference rates updated instantly | Real-time virtual banking conversion API simulation
-                    </p>
-                </div>
-            </div>
+                        <!-- TAB 2 -->
+                        <div id="panel-matrix" class="hidden">
+                            <div class="panel-rule bg-paper-50/90 border border-ink-900/10 rounded-lg overflow-hidden">
+                                <div class="p-5 border-b border-ink-900/10 flex items-center justify-between gap-3 flex-wrap">
+                                    <div>
+                                        <h3 class="font-display font-semibold text-ink-900 text-lg">Comparative Overview</h3>
+                                        <p class="text-sm text-ink-600 mt-0.5">Study differences in a linear, scannable layout.</p>
+                                    </div>
+                                    <button onclick="downloadCSV()" class="bg-sage-600 hover:bg-sage-700 text-white px-3 py-1.5 rounded-md text-sm font-bold transition-all flex items-center gap-1">
+                                        <i data-lucide="download" class="w-3.5 h-3.5"></i> Export CSV
+                                    </button>
+                                </div>
 
-            <!-- Currency Lookup Rates -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Check Conversion Matrix -->
-                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-                    <h4 class="font-extrabold text-slate-900 text-base mb-4">Currency Matrix Shortcuts</h4>
-                    <div class="space-y-3">
-                        <div class="flex justify-between border-b border-slate-100 pb-2 text-sm text-slate-400 font-bold uppercase tracking-wider">
-                            <span>Base Currency (GBP)</span>
-                            <span id="quick-convert-title">Value (JPY)</span>
-                        </div>
-                        <div class="space-y-2" id="exc-quick-table">
-                            <!-- Matrix loader -->
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tips -->
-                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 space-y-4">
-                    <h4 class="font-extrabold text-slate-900 text-base">✈️ Cross-Border Exchange & Settlement Tips</h4>
-                    <div class="space-y-4">
-                        <div class="flex items-start space-x-3.5">
-                            <div class="mt-1 text-amber-500 shrink-0">
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
-                            </div>
-                            <div>
-                                <p class="text-sm font-bold text-slate-800">Avoid airport counters</p>
-                                <p class="text-xs text-slate-500 leading-relaxed">Airport currency transaction booths frequently incur standard fee overrides up to 10%. Withdraw pocket cash from standard domestic ATMs displaying UnionPay/VISA/Mastercard logos for prime interbank rates.</p>
+                                <div id="matrix-body" class="divide-y divide-ink-900/10">
+                                    <!-- filled by JS -->
+                                </div>
                             </div>
                         </div>
-                        <div class="flex items-start space-x-3.5">
-                            <div class="mt-1 text-teal-500 shrink-0">
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
-                            </div>
-                            <div>
-                                <p class="text-sm font-bold text-slate-800">DCC & FTF Charges</p>
-                                <p class="text-xs text-slate-500 leading-relaxed">Ensure to charge in LOCAL destination currency on dual-currency cards to bypass Dynamic Currency Conversion (DCC) markups up to 8%.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
 
-        <!-- ======================= 4. WEATHER TAB ======================= -->
-        <section id="tab-weather-view" class="p-6 space-y-6 hidden">
-            <!-- Search bar -->
-            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4">
-                <div class="flex items-center space-x-3.5 w-full md:w-auto">
-                    <div class="p-3 bg-blue-50 text-blue-600 rounded-xl">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                    </div>
-                    <div>
-                        <h3 class="text-lg font-extrabold text-slate-900">Destination Weather Hub</h3>
-                        <p class="text-xs text-slate-400">Analyze micro-climate conditions and packing guidelines.</p>
-                    </div>
-                </div>
-                <div class="flex space-x-2 w-full md:w-96">
-                    <input type="text" id="weather-city-input" placeholder="Type city, e.g., Tokyo, London, Paris" class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-teal-500 text-slate-800 font-semibold">
-                    <button onclick="searchCityWeather()" class="bg-teal-500 hover:bg-teal-600 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition shadow-lg shadow-teal-500/15">
-                        Query
-                    </button>
-                </div>
-            </div>
-
-            <!-- Current Weather & 7-Day Matrix -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Highlight status -->
-                <div class="lg:col-span-1 bg-gradient-to-br from-blue-600 via-indigo-600 to-indigo-800 rounded-3xl p-6 text-white shadow-xl shadow-blue-500/10 flex flex-col justify-between border border-white/5 relative overflow-hidden">
-                    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.1),transparent)] pointer-events-none"></div>
-                    <div class="relative z-10">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <h4 id="wea-cur-city" class="text-3xl font-black">London</h4>
-                                <p class="text-blue-200 text-xs font-bold uppercase tracking-wider mt-1">Today, Local Standard Time</p>
-                            </div>
-                            <span id="wea-cur-icon" class="text-5xl">☀️</span>
-                        </div>
-                        <div class="mt-8">
-                            <h2 id="wea-cur-temp" class="text-6xl font-black tracking-tight">18°C</h2>
-                            <p id="wea-cur-desc" class="text-lg text-blue-100 font-extrabold mt-1">Light Rain</p>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4 border-t border-white/20 pt-4 mt-8 relative z-10">
-                        <div>
-                            <p class="text-blue-200 text-xs uppercase tracking-wider font-semibold">Humidity Level</p>
-                            <p id="wea-cur-humidity" class="font-bold text-base">78%</p>
-                        </div>
-                        <div>
-                            <p class="text-blue-200 text-xs uppercase tracking-wider font-semibold">Wind Speed</p>
-                            <p id="wea-cur-wind" class="font-bold text-base">SW Wind · Level 3</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 7 Day Forecast Slider -->
-                <div class="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col justify-between">
-                    <h4 class="font-extrabold text-slate-900 text-base mb-4">🔮 7-Day Analytical Trend Forecast</h4>
-                    <div id="wea-seven-days" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
-                        <!-- Loaded dynamically -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- AI Guidelines -->
-            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-                <h4 class="font-extrabold text-slate-900 text-base mb-4 flex items-center space-x-2">
-                    <span>🧳 AI Co-Pilot Packing Advisor</span>
-                    <span class="text-xs bg-emerald-50 text-emerald-600 font-bold px-3 py-1 rounded-full uppercase">Verified Engine</span>
-                </h4>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <!-- Wardrobe Guide -->
-                    <div class="p-4.5 bg-slate-50/50 rounded-2xl border border-slate-100 space-y-2">
-                        <div class="flex items-center space-x-2 font-bold text-slate-800">
-                            <span class="text-lg">👕</span>
-                            <span>Wardrobe & Style</span>
-                        </div>
-                        <p id="tip-clothing" class="text-xs text-slate-500 leading-relaxed">
-                            Highly recommend linen short sleeves, cotton shorts, or lightweight sundresses. Bring an ultra-light windbreaker for micro-climate transitions.
-                        </p>
-                    </div>
-
-                    <!-- Accessories -->
-                    <div class="p-4.5 bg-slate-50/50 rounded-2xl border border-slate-100 space-y-2">
-                        <div class="flex items-center space-x-2 font-bold text-slate-800">
-                            <span class="text-lg">🌂</span>
-                            <span>Gear & Protection</span>
-                        </div>
-                        <p id="tip-necessity" class="text-xs text-slate-500 leading-relaxed">
-                            High UV radiation predicted. Do pack sunscreen (SPF50+), polarized sunshade glass, hat, and an insulated water bottle to maintain hydration.
-                        </p>
-                    </div>
-
-                    <!-- Outdoor activity suitable -->
-                    <div class="p-4.5 bg-slate-50/50 rounded-2xl border border-slate-100 space-y-2">
-                        <div class="flex items-center space-x-2 font-bold text-slate-800">
-                            <span class="text-lg">🏕️</span>
-                            <span>Vibe & Outdoors</span>
-                        </div>
-                        <p id="tip-activity" class="text-xs text-slate-500 leading-relaxed">
-                            Optimal climate index for photography, mountain trails, and street exploration. Bypass heavy tasks during maximum sun intensity.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- ======================= 5. PREMIUM MODAL LAYER ======================= -->
-    
-    <!-- Modal: Social Media Post Generator (Exquisite LinkedIn/RED post templates) -->
-    <div id="modal-social-generator" class="fixed inset-0 bg-slate-950/60 flex items-center justify-center p-4 z-[80] hidden backdrop-blur-md">
-        <div class="bg-white rounded-3xl w-full max-w-xl p-7 shadow-2xl transform scale-95 transition-all duration-300">
-            <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3.5">
-                <h3 class="text-lg font-black text-slate-900 flex items-center space-x-2">
-                    <span>✨</span>
-                    <span>Generate Viral Social Media Card</span>
-                </h3>
-                <button onclick="closeSocialGenerator()" class="text-slate-400 hover:text-slate-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </div>
-
-            <!-- Tab selection for platforms -->
-            <div class="flex bg-slate-100 rounded-xl p-1 mb-5">
-                <button onclick="switchSocialPlatform('linkedin')" id="btn-social-linkedin" class="flex-1 text-xs font-bold py-2 rounded-lg bg-white text-slate-900 shadow-sm transition">
-                    👔 LinkedIn Post
-                </button>
-                <button onclick="switchSocialPlatform('red')" id="btn-social-red" class="flex-1 text-xs font-bold py-2 rounded-lg text-slate-500 hover:text-slate-900 transition">
-                    📕 小红书 (RED) Copywriting
-                </button>
-            </div>
-
-            <!-- Text Preview Field -->
-            <div class="space-y-3">
-                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Ready-to-Post Copywriting</label>
-                <textarea id="social-copy-textarea" rows="8" class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-xs font-medium text-slate-700 outline-none focus:ring-2 focus:ring-teal-500 leading-relaxed no-scrollbar"></textarea>
-            </div>
-
-            <div class="pt-6 flex space-x-3">
-                <button onclick="closeSocialGenerator()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl text-xs transition uppercase tracking-wider">Close</button>
-                <button onclick="copySocialPost()" class="flex-1 bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 text-white font-extrabold py-3 rounded-xl text-xs transition shadow-lg shadow-teal-500/10 uppercase tracking-wider">Copy Text to Clipboard</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal: PWA WebApp Installation Helper -->
-    <div id="modal-pwa-guide" class="fixed inset-0 bg-slate-950/60 flex items-center justify-center p-4 z-[90] hidden backdrop-blur-md">
-        <div class="bg-white rounded-3xl w-full max-w-md p-7 shadow-2xl transform scale-95 transition-all duration-300">
-            <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3.5">
-                <h3 class="text-lg font-black text-slate-900 flex items-center space-x-2">
-                    <span>📲</span>
-                    <span>Installation Tutorial</span>
-                </h3>
-                <button onclick="closePwaGuide()" class="text-slate-400 hover:text-slate-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </div>
-            
-            <div class="space-y-6">
-                <!-- Apple Safari -->
-                <div class="space-y-2">
-                    <div class="flex items-center space-x-2">
-                        <span class="bg-slate-100 text-slate-800 text-[10px] font-extrabold px-2.5 py-1 rounded-md uppercase">Apple iOS (Safari)</span>
-                    </div>
-                    <ol class="text-xs text-slate-500 space-y-2 pl-4 list-decimal leading-relaxed font-medium">
-                        <li>Launch the default native <strong class="text-teal-600 font-bold">Safari Browser</strong> to load this workspace.</li>
-                        <li>Tap the official <strong class="text-slate-900 font-bold">"Share" icon</strong> (box containing an upward arrow <span class="bg-slate-100 px-1 py-0.5 rounded text-sm">⎋</span>) on bottom panel.</li>
-                        <li>Scroll down and tap <strong class="text-slate-900 font-bold">"Add to Home Screen"</strong> option.</li>
-                        <li>Tap "Add" in upper right corner. Start full-screen directly from dashboard!</li>
-                    </ol>
-                </div>
-
-                <hr class="border-slate-100">
-
-                <!-- Google Chrome Android -->
-                <div class="space-y-2">
-                    <div class="flex items-center space-x-2">
-                        <span class="bg-teal-500 text-white text-[10px] font-extrabold px-2.5 py-1 rounded-md uppercase">Android (Chrome)</span>
-                    </div>
-                    <ol class="text-xs text-slate-500 space-y-2 pl-4 list-decimal leading-relaxed font-medium">
-                        <li>Launch Google <strong class="text-teal-600 font-bold">Chrome Mobile Browser</strong> to view this page.</li>
-                        <li>Tap the <strong class="text-slate-900 font-bold">Settings (three dots)</strong> menu icon.</li>
-                        <li>Select <strong class="text-slate-900 font-bold">"Install App"</strong> or "Add to Home Screen".</li>
-                        <li>Verify. VoyageEase is now available natively on your phone desk!</li>
-                    </ol>
-                </div>
-            </div>
-
-            <div class="pt-6">
-                <button onclick="closePwaGuide()" class="w-full bg-slate-950 hover:bg-slate-900 text-white font-bold py-3 rounded-xl text-xs transition uppercase tracking-wider">I understand</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal: Create New Trip -->
-    <div id="modal-new-trip" class="fixed inset-0 bg-slate-950/50 flex items-center justify-center p-4 z-[80] hidden backdrop-blur-sm">
-        <div class="bg-white rounded-3xl w-full max-w-md p-7 shadow-2xl transform scale-95 transition-all duration-300">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-black text-slate-900">Initiate New Journey</h3>
-                <button onclick="closeNewTripModal()" class="text-slate-400 hover:text-slate-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </div>
-            
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Destination Name</label>
-                    <input type="text" id="new-trip-destination" placeholder="e.g., Tokyo Sakura Romantic Escape" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs outline-none font-semibold focus:ring-2 focus:ring-teal-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Budget Allocation (GBP)</label>
-                    <input type="number" id="new-trip-budget" placeholder="1500" value="1500" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs outline-none font-semibold focus:ring-2 focus:ring-teal-500">
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Departure Date</label>
-                        <input type="date" id="new-trip-start" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-xs outline-none font-semibold focus:ring-2 focus:ring-teal-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Duration Days</label>
-                        <input type="number" id="new-trip-days" value="5" min="1" max="15" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-xs outline-none font-semibold focus:ring-2 focus:ring-teal-500">
-                    </div>
-                </div>
-                <div class="pt-4 flex space-x-3">
-                    <button onclick="closeNewTripModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl text-xs transition uppercase tracking-wider">Cancel</button>
-                    <button onclick="saveNewTrip()" class="flex-1 bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 rounded-xl text-xs transition shadow-lg shadow-teal-500/10 uppercase tracking-wider">Launch Journey</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal: Edit Trip Info -->
-    <div id="modal-edit-trip" class="fixed inset-0 bg-slate-950/50 flex items-center justify-center p-4 z-[80] hidden backdrop-blur-sm">
-        <div class="bg-white rounded-3xl w-full max-w-md p-7 shadow-2xl transform scale-95 transition-all duration-300">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-black text-slate-900">Configure Trip Metadata</h3>
-                <button onclick="closeEditTripModal()" class="text-slate-400 hover:text-slate-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </div>
-            
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Destination Title</label>
-                    <input type="text" id="edit-trip-destination" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs font-semibold outline-none focus:ring-2 focus:ring-teal-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Total Allocated Budget (GBP)</label>
-                    <input type="number" id="edit-trip-budget" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs font-semibold outline-none focus:ring-2 focus:ring-teal-500">
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Departure Date</label>
-                        <input type="date" id="edit-trip-start" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-xs font-semibold outline-none focus:ring-2 focus:ring-teal-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Total Days Duration</label>
-                        <input type="number" id="edit-trip-days" min="1" max="15" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-xs font-semibold outline-none focus:ring-2 focus:ring-teal-500">
-                    </div>
-                </div>
-                <div class="pt-4 flex space-x-3">
-                    <button onclick="closeEditTripModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl text-xs transition uppercase tracking-wider">Cancel</button>
-                    <button onclick="saveEditTrip()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl text-xs transition shadow-lg shadow-indigo-500/10 uppercase tracking-wider">Commit Updates</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal: Add / Edit Event Activity Location -->
-    <div id="modal-activity" class="fixed inset-0 bg-slate-950/50 flex items-center justify-center p-4 z-[80] hidden backdrop-blur-sm">
-        <div class="bg-white rounded-3xl w-full max-w-lg p-7 shadow-2xl transform scale-95 transition-all duration-300">
-            <div class="flex justify-between items-center mb-4">
-                <h3 id="activity-modal-title" class="text-lg font-black text-slate-900">Add Destination Event Node</h3>
-                <button onclick="closeActivityModal()" class="text-slate-400 hover:text-slate-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </div>
-            
-            <div class="space-y-4">
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Day Alignment</label>
-                        <select id="act-day-select" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-xs font-semibold outline-none focus:ring-2 focus:ring-teal-500">
-                            <!-- Loaded dynamically -->
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Time scheduled</label>
-                        <input type="time" id="act-time" value="09:00" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-xs font-semibold outline-none focus:ring-2 focus:ring-teal-500">
-                    </div>
-                </div>
-                
-                <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Event Topic / Sight Title</label>
-                    <input type="text" id="act-title" placeholder="e.g., Explore Shinjuku Gyoen National Garden" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs font-semibold outline-none focus:ring-2 focus:ring-teal-500">
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Coordinates Address / Location</label>
-                        <input type="text" id="act-location" placeholder="e.g., Tokyo, Shinjuku District" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs font-semibold outline-none focus:ring-2 focus:ring-teal-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Cost Estimation (GBP)</label>
-                        <input type="number" id="act-cost" placeholder="0" value="0" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs font-semibold outline-none focus:ring-2 focus:ring-teal-500">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Expense Node Category</label>
-                        <select id="act-category" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-xs font-semibold outline-none focus:ring-2 focus:ring-teal-500">
-                            <option value="Sights">⛩️ Sights & Tours</option>
-                            <option value="Dining">🍱 Dining & Food</option>
-                            <option value="Hotel">🏨 Hotel & Stay</option>
-                            <option value="Transport">🚇 Transit & Transport</option>
-                            <option value="Shopping">🛍️ Shopping & Gifts</option>
-                            <option value="Leisure">☕ Leisure & Coffee</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Transit / Guideline Notes</label>
-                        <input type="text" id="act-notes" placeholder="e.g., Take Metro Marunouchi Line directly" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs font-semibold outline-none focus:ring-2 focus:ring-teal-500">
-                    </div>
-                </div>
-
-                <div class="pt-4 flex space-x-3">
-                    <button onclick="closeActivityModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl text-xs transition uppercase tracking-wider">Cancel</button>
-                    <button onclick="saveNewActivity()" class="flex-1 bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 rounded-xl text-xs transition shadow-lg shadow-teal-500/10 uppercase tracking-wider">Save Node</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ======================= 6. TRAVEL CORE LOGIC ======================= -->
-    <script>
-        // Default packing checklist
-        const defaultPackingChecklist = [
-            { id: "p1", category: "Essentials", text: "Passport & Identity Card", checked: true },
-            { id: "p2", category: "Essentials", text: "VISA / Landing Documents", checked: true },
-            { id: "p3", category: "Electronics", text: "Universal Power Plug Adapter", checked: false },
-            { id: "p4", category: "Electronics", text: "High-Capacity Powerbank", checked: false },
-            { id: "p5", category: "Wardrobe", text: "Lightweight Breathable Outfits", checked: true },
-            { id: "p6", category: "Wardrobe", text: "Comfortable Sneakers", checked: false },
-            { id: "p7", category: "Essentials", text: "Medical First-Aid Kits", checked: false }
-        ];
-
-        // Adjusted preset trip plans in GBP scale
-        const defaultTrips = [
-            {
-                id: "trip-tokyo",
-                destination: "Tokyo Sakura & Tech Odyssey 5-Day Tour",
-                budget: 1800,
-                startDate: "2026-06-25",
-                daysCount: 5,
-                cityQuery: "Tokyo",
-                events: [
-                    { id: "e1", day: 1, time: "09:30", title: "Arrival at Narita Airport", location: "Narita International Airport", cost: 130, category: "Transport", notes: "Collect baggage and exchange physical PASMO/Suica Card" },
-                    { id: "e2", day: 1, time: "12:00", title: "Check-in at Asakusa View Hotel", location: "Asakusa District, Tokyo", cost: 260, category: "Hotel", notes: "Express Metro via Oedo line directly to hotel lobby" },
-                    { id: "e3", day: 1, time: "14:00", title: "Asakusa Sensoji Temple & Nakamise street", location: "Sensoji, Tokyo", cost: 20, category: "Sights", notes: "Try local traditional Matcha dango snacks" },
-                    { id: "e4", day: 1, time: "18:00", title: "Wagyu Beef BBQ Premium Dinner", location: "Shinjuku Jojoen", cost: 110, category: "Dining", notes: "Stunning table overlooking Shinjuku City skyline" },
-                    { id: "e5", day: 2, time: "09:00", title: "Tokyo DisneySea Full-day Exploration", location: "Urayasu, Chiba", cost: 70, category: "Sights", notes: "Acquire Disney Premier Access for Fantasy Springs" },
-                    { id: "e6", day: 3, time: "10:00", title: "Shibuya Crossing Landmark Shooting", location: "Shibuya Crossing", cost: 0, category: "Sights", notes: "Capture the world's most crowded pedestrian crossing from above" },
-                    { id: "e7", day: 3, time: "15:00", title: "Ginza Luxury Shopping Spree", location: "Ginza Six Mall", cost: 420, category: "Shopping", notes: "Select exclusive local souvenirs" },
-                    { id: "e8", day: 4, time: "11:00", title: "Tsukiji Outer Market Premium Seafood Feast", location: "Tsukiji Fish Market", cost: 50, category: "Dining", notes: "Enjoy fresh king crab leg and urchin bowls" },
-                    { id: "e9", day: 5, time: "14:00", title: "Tokyo Tower Observatory View", location: "Minato, Tokyo Tower", cost: 20, category: "Leisure", notes: "Post cards back to office coworkers" }
-                ]
-            },
-            {
-                id: "trip-london",
-                destination: "London Historic Majesty & Gallery 5-Day Tour",
-                budget: 2200,
-                startDate: "2026-07-15",
-                daysCount: 5,
-                cityQuery: "London",
-                events: [
-                    { id: "e30", day: 1, time: "09:00", title: "Tower Bridge Tour & London Tower", location: "Tower Bridge", cost: 38, category: "Sights", notes: "Pre-book tickets to capture historic Crown Jewels" },
-                    { id: "e31", day: 1, time: "12:30", title: "British Afternoon Tea at Savoy", location: "The Savoy Lobby", cost: 75, category: "Dining", notes: "Savor premium scones and Earl Grey tea" },
-                    { id: "e32", day: 2, time: "08:30", title: "Day trip to Stonehenge & Windsor Castle", location: "Wiltshire & Windsor", cost: 90, category: "Sights", notes: "Bespoke shuttle bus tour from central London" },
-                    { id: "e33", day: 3, time: "13:00", title: "The British Museum Antiquities", location: "Great Russell Street", cost: 0, category: "Sights", notes: "Free admission. Spend afternoon around Egyptian galleries" },
-                    { id: "e34", day: 4, time: "14:00", title: "West End Musical Lion King", location: "Lyceum Theatre", cost: 105, category: "Leisure", notes: "Stalls tier-1 premium seats" },
-                    { id: "e35", day: 5, time: "16:00", title: "Soho Borough Market street tasting", location: "Soho, London", cost: 25, category: "Dining", notes: "Indulge in artisanal cheeses and pastries" }
-                ]
-            }
-        ];
-
-        // Core Forex Reference relative to base currency GBP (1.0 GBP equivalents)
-        const exchangeRates = { 
-            GBP: 1.0, 
-            USD: 1.28, 
-            EUR: 1.18, 
-            JPY: 201.20, 
-            KRW: 1774.50, 
-            CNY: 9.28 
-        };
-
-        // Micro-climate mock conditions
-        const mockWeatherData = {
-            "Tokyo": {
-                temp: 24, desc: "Cloudy", icon: "⛅", humidity: "62%", wind: "E Wind · L2",
-                tips: {
-                    clothing: "Light linen top, breathable cotton shorts or comfortable active trousers are ideal.",
-                    necessity: "Pack a dual-use umbrella, comfortable sneakers, and hand sanitizer.",
-                    activity: "Fabulous climate for exploring Shinjuku parks. Head to Shibuya Sky at dusk for absolute views."
-                },
-                sevenDays: [
-                    { day: "Mon", temp: "22/27°C", desc: "Sunny", icon: "☀️" },
-                    { day: "Tue", temp: "21/25°C", desc: "Partly Cloudy", icon: "⛅" },
-                    { day: "Wed", temp: "20/24°C", desc: "Light Rain", icon: "🌧️" },
-                    { day: "Thu", temp: "22/26°C", desc: "Cloudy", icon: "☁️" },
-                    { day: "Fri", temp: "23/28°C", desc: "Overcast", icon: "☁️" },
-                    { day: "Sat", temp: "24/29°C", desc: "Thunderstorm", icon: "⛈️" },
-                    { day: "Sun", temp: "23/27°C", desc: "Clear Sky", icon: "🌤️" }
-                ]
-            },
-            "London": {
-                temp: 18, desc: "Light Rain", icon: "🌧️", humidity: "78%", wind: "SW Wind · L3",
-                tips: {
-                    clothing: "Layer with a trench coat or lightweight windbreaker. Temperatures fluctuate rapidly.",
-                    necessity: "Carry water-resistant bags, wind-proof umbrellas, and moisturizers.",
-                    activity: "Fabulous index for visiting Tate Modern or national galleries. Avoid long open cruises."
-                },
-                sevenDays: [
-                    { day: "Mon", temp: "15/19°C", desc: "Showers", icon: "🌧️" },
-                    { day: "Tue", temp: "16/20°C", desc: "Drizzle", icon: "🌧️" },
-                    { day: "Wed", temp: "17/22°C", desc: "Cloudy", icon: "☁️" },
-                    { day: "Thu", temp: "18/21°C", desc: "Partly Sunny", icon: "🌤️" },
-                    { day: "Fri", temp: "16/19°C", desc: "Overcast", icon: "☁️" },
-                    { day: "Sat", temp: "15/18°C", desc: "Chilly", icon: "🌧️" },
-                    { day: "Sun", temp: "17/20°C", desc: "Mostly Sunny", icon: "☀️" }
-                ]
-            },
-            "Beijing": {
-                temp: 31, desc: "Sunny", icon: "☀️", humidity: "38%", wind: "NW Wind · L1",
-                tips: {
-                    clothing: "Extremely hot. Put on breathable linen clothes, sunscreen sleeves, and active wear.",
-                    necessity: "Sunscreen cream (SPF 50+), protective shades, bucket hat, and lots of water.",
-                    activity: "Ideal for Palace Museum visit. Rest under pavilion shelters during noon hours."
-                },
-                sevenDays: [
-                    { day: "Mon", temp: "25/32°C", desc: "Sunny", icon: "☀️" },
-                    { day: "Tue", temp: "26/34°C", desc: "Hot", icon: "☀️" },
-                    { day: "Wed", temp: "25/33°C", desc: "Partly Cloudy", icon: "⛅" },
-                    { day: "Thu", temp: "22/30°C", desc: "Clear Sky", icon: "🌤️" },
-                    { day: "Fri", temp: "23/31°C", desc: "Overcast", icon: "☁️" },
-                    { day: "Sat", temp: "24/32°C", desc: "Rain", icon: "⛈️" },
-                    { day: "Sun", temp: "23/30°C", desc: "Cloudy", icon: "⛅" }
-                ]
-            }
-        };
-
-        let trips = [];
-        let currentTripId = "";
-        let selectedDay = 1; 
-        let currentEditEventId = null;
-        let packingChecklist = [];
-        let activeSocialPlatform = "linkedin";
-
-        // ======================= Initialization =======================
-        window.onload = function() {
-            // Retrieve Trips
-            const savedTrips = localStorage.getItem("voyage_ease_trips2_gbp");
-            const savedActiveId = localStorage.getItem("voyage_ease_active_id2_gbp");
-            if (savedTrips) {
-                trips = JSON.parse(savedTrips);
-            } else {
-                trips = defaultTrips;
-                localStorage.setItem("voyage_ease_trips2_gbp", JSON.stringify(trips));
-            }
-
-            if (savedActiveId && trips.some(t => t.id === savedActiveId)) {
-                currentTripId = savedActiveId;
-            } else {
-                currentTripId = trips[0].id;
-                localStorage.setItem("voyage_ease_active_id2_gbp", currentTripId);
-            }
-
-            // Retrieve Packing Checklist
-            const savedPacking = localStorage.getItem("voyage_ease_packing_gbp");
-            if (savedPacking) {
-                packingChecklist = JSON.parse(savedPacking);
-            } else {
-                packingChecklist = defaultPackingChecklist;
-                localStorage.setItem("voyage_ease_packing_gbp", JSON.stringify(packingChecklist));
-            }
-
-            renderTripSelector();
-            renderDashboard();
-            renderItinerary();
-            renderExchangeRates();
-            renderWeatherSection();
-            renderPackingList();
-
-            // Check standalone mode to hide installation banner
-            if (window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches) {
-                const pwaBanner = document.getElementById("pwa-mobile-banner");
-                if (pwaBanner) pwaBanner.classList.add("hidden");
-            }
-        };
-
-        // ======================= PWA Guide Controls =======================
-        function openPwaGuide() {
-            document.getElementById("modal-pwa-guide").classList.remove("hidden");
-        }
-        function closePwaGuide() {
-            document.getElementById("modal-pwa-guide").classList.add("hidden");
-        }
-
-        // ======================= Social Media Card Generator =======================
-        function openSocialGenerator() {
-            renderSocialPost();
-            document.getElementById("modal-social-generator").classList.remove("hidden");
-        }
-        function closeSocialGenerator() {
-            document.getElementById("modal-social-generator").classList.add("hidden");
-        }
-
-        function switchSocialPlatform(platform) {
-            activeSocialPlatform = platform;
-            const btnLinkedin = document.getElementById("btn-social-linkedin");
-            const btnRed = document.getElementById("btn-social-red");
-
-            if (platform === "linkedin") {
-                btnLinkedin.className = "flex-1 text-xs font-bold py-2 rounded-lg bg-white text-slate-900 shadow-sm transition";
-                btnRed.className = "flex-1 text-xs font-bold py-2 rounded-lg text-slate-500 hover:text-slate-900 transition";
-            } else {
-                btnLinkedin.className = "flex-1 text-xs font-bold py-2 rounded-lg text-slate-500 hover:text-slate-900 transition";
-                btnRed.className = "flex-1 text-xs font-bold py-2 rounded-lg bg-white text-slate-900 shadow-sm transition";
-            }
-            renderSocialPost();
-        }
-
-        function renderSocialPost() {
-            const trip = getCurrentTrip();
-            const textarea = document.getElementById("social-copy-textarea");
-            
-            // Total cost estimation calculation
-            let totalCost = 0;
-            trip.events.forEach(e => totalCost += parseFloat(e.cost || 0));
-
-            if (activeSocialPlatform === "linkedin") {
-                textarea.value = `📍 Proud to share my upcoming global trip planned using VoyageEase!
-
-🚀 Adventure: ${trip.destination}
-📅 Launching: ${trip.startDate} (${trip.daysCount} Days)
-🗺️ Destination: ${trip.cityQuery}
-📊 Budget Allocation: £${totalCost.toLocaleString()} GBP structured efficiently.
-🍃 Carbon Offset Projection: 14.2 kg CO2 Compensated (Green Nomad Rated)
-
-Synchronized timelines, travel mapping, and active meteorological telemetry. Excited for this milestone!
-
-#DigitalNomad #VoyageEase #Productivity #GlobalTravel #EcoTravel #BusinessNomad`;
-            } else {
-                textarea.value = `✨ 宝子们！用智能AI神器 VoyageEase 规划出的梦幻出境旅行日程卡来啦！
-
-✈️ 目标地：${trip.destination}
-📅 出行天数：${trip.daysCount} 天深色体验
-👛 预算总开销：£${totalCost.toLocaleString()} GBP（所有景点门票、交通和网红酒店都折算成了英镑，太直观了）
-🎒 行李准备进度和低碳值也是一键生成！
-
-不得不说这个英镑本地化排版质感无敌了！在小红书分享出来非常高级！实地探店小细节见后续日记～
-
-#出境游指南 #英镑记账 #AI旅行助手 #VoyageEase #我的旅行日记 #小红书爆款`;
-            }
-        }
-
-        function copySocialPost() {
-            const textarea = document.getElementById("social-copy-textarea");
-            textarea.select();
-            document.execCommand('copy');
-            showToast("Social text copied to clipboard successfully!");
-        }
-
-        // ======================= Tab Controls =======================
-        function switchTab(tabId) {
-            const views = ["dashboard", "itinerary", "exchange", "weather"];
-            views.forEach(v => {
-                const viewEl = document.getElementById(`tab-${v}-view`);
-                if (viewEl) {
-                    if (v === tabId) {
-                        viewEl.classList.remove("hidden");
-                    } else {
-                        viewEl.classList.add("hidden");
-                    }
-                }
-
-                // Sidebar buttons highlight
-                const navBtn = document.getElementById(`nav-${v}`);
-                if (navBtn) {
-                    if (v === tabId) {
-                        navBtn.className = "nav-item w-full flex items-center space-x-3.5 px-4 py-3.5 rounded-xl transition-all duration-300 text-teal-400 bg-slate-900/80 font-medium";
-                    } else {
-                        navBtn.className = "nav-item w-full flex items-center space-x-3.5 px-4 py-3.5 rounded-xl transition-all duration-300 text-slate-400 hover:bg-slate-900 hover:text-white font-medium";
-                    }
-                }
-
-                // Mobile Navigation highlight
-                const mobBtn = document.getElementById(`mob-${v}`);
-                if (mobBtn) {
-                    if (v === tabId) {
-                        mobBtn.className = "flex flex-col items-center space-y-0.5 text-teal-400";
-                    } else {
-                        mobBtn.className = "flex flex-col items-center space-y-0.5 text-slate-500";
-                    }
-                }
-            });
-
-            const titles = {
-                dashboard: "My Dashboard",
-                itinerary: "Interactive Itinerary Planner",
-                exchange: "Exquisite Forex Center",
-                weather: "Meteorological Intelligence"
-            };
-            document.getElementById("header-title").innerText = titles[tabId];
-
-            if (tabId === 'itinerary') {
-                renderItinerary();
-            } else if (tabId === 'dashboard') {
-                renderDashboard();
-            } else if (tabId === 'weather') {
-                updateWeatherByCurrentTrip();
-            }
-        }
-
-        // ======================= Trip Switcher =======================
-        function renderTripSelector() {
-            const selector = document.getElementById("trip-selector");
-            selector.innerHTML = "";
-            trips.forEach(trip => {
-                const opt = document.createElement("option");
-                opt.value = trip.id;
-                opt.innerText = trip.destination;
-                if (trip.id === currentTripId) {
-                    opt.selected = true;
-                }
-                selector.appendChild(opt);
-            });
-        }
-
-        function changeCurrentTrip(tripId) {
-            currentTripId = tripId;
-            localStorage.setItem("voyage_ease_active_id2_gbp", tripId);
-            selectedDay = 1; 
-            renderDashboard();
-            renderItinerary();
-            updateWeatherByCurrentTrip();
-            showToast("Switched to trip: " + getCurrentTrip().destination);
-        }
-
-        // Current trip info retrieval
-        function getCurrentTrip() {
-            return trips.find(t => t.id === currentTripId) || trips[0];
-        }
-
-        function saveTripsToStorage() {
-            localStorage.setItem("voyage_ease_trips2_gbp", JSON.stringify(trips));
-        }
-
-        // ======================= Interactive Packing Checklist =======================
-        function renderPackingList() {
-            const container = document.getElementById("packing-checklist-items");
-            container.innerHTML = "";
-
-            packingChecklist.forEach(item => {
-                const div = document.createElement("div");
-                div.className = "flex items-center justify-between p-2.5 bg-slate-50 hover:bg-slate-100/80 rounded-xl border border-slate-100 transition duration-150";
-                
-                const checkedClass = item.checked ? "line-through text-slate-400 font-medium" : "text-slate-700 font-semibold";
-                const isCheckedAttr = item.checked ? "checked" : "";
-
-                div.innerHTML = `
-                    <div class="flex items-center space-x-3.5">
-                        <input type="checkbox" onchange="togglePackingItem('${item.id}')" ${isCheckedAttr} class="w-4 h-4 text-teal-600 border-slate-300 rounded focus:ring-teal-500">
-                        <span class="text-xs ${checkedClass}">${item.text}</span>
-                    </div>
-                    <span class="text-[9px] bg-white border px-1.5 py-0.5 rounded text-slate-400 font-bold uppercase tracking-wider">${item.category}</span>
-                `;
-                container.appendChild(div);
-            });
-
-            updatePackingMetrics();
-        }
-
-        function togglePackingItem(id) {
-            const item = packingChecklist.find(p => p.id === id);
-            if (item) {
-                item.checked = !item.checked;
-                localStorage.setItem("voyage_ease_packing_gbp", JSON.stringify(packingChecklist));
-                updatePackingMetrics();
-                renderPackingList();
-            }
-        }
-
-        function addCustomPackingItem() {
-            const input = document.getElementById("new-packing-item-input");
-            const text = input.value.trim();
-            if (!text) return;
-
-            const newItem = {
-                id: "pack-" + Date.now(),
-                category: "Custom",
-                text: text,
-                checked: false
-            };
-
-            packingChecklist.push(newItem);
-            localStorage.setItem("voyage_ease_packing_gbp", JSON.stringify(packingChecklist));
-            input.value = "";
-            renderPackingList();
-            showToast("Added item: " + text);
-        }
-
-        function resetPackingChecklist() {
-            packingChecklist = defaultPackingChecklist.map(p => ({ ...p, checked: false }));
-            localStorage.setItem("voyage_ease_packing_gbp", JSON.stringify(packingChecklist));
-            renderPackingList();
-            showToast("Packing checklist reset successfully.");
-        }
-
-        function updatePackingMetrics() {
-            const total = packingChecklist.length;
-            const checked = packingChecklist.filter(p => p.checked).length;
-            const percentage = total > 0 ? Math.round((checked / total) * 100) : 0;
-
-            document.getElementById("packing-rate-display").innerText = `${percentage}%`;
-            document.getElementById("packing-progress-bar").style.width = `${percentage}%`;
-        }
-
-        // ======================= Dashboard Visual Chart splits (GBP scale) =======================
-        function renderBudgetSplitVisual(trip) {
-            const splitBar = document.getElementById("dashboard-category-split-bar");
-            const splitLegend = document.getElementById("dashboard-category-split-legend");
-            
-            splitBar.innerHTML = "";
-            splitLegend.innerHTML = "";
-
-            const categories = ["Sights", "Dining", "Hotel", "Transport", "Shopping", "Leisure"];
-            const colors = {
-                "Sights": "bg-emerald-500",
-                "Dining": "bg-amber-500",
-                "Hotel": "bg-indigo-500",
-                "Transport": "bg-rose-500",
-                "Shopping": "bg-fuchsia-500",
-                "Leisure": "bg-sky-500"
-            };
-
-            const textColors = {
-                "Sights": "text-emerald-500",
-                "Dining": "text-amber-500",
-                "Hotel": "text-indigo-500",
-                "Transport": "text-rose-500",
-                "Shopping": "text-fuchsia-500",
-                "Leisure": "text-sky-500"
-            };
-
-            let totalSpent = 0;
-            const costs = {};
-            categories.forEach(c => costs[c] = 0);
-
-            trip.events.forEach(e => {
-                const mappedCat = e.category === "景点" || e.category === "Sights" ? "Sights" :
-                                  e.category === "美食" || e.category === "Dining" ? "Dining" :
-                                  e.category === "住宿" || e.category === "Hotel" ? "Hotel" :
-                                  e.category === "交通" || e.category === "Transport" ? "Transport" :
-                                  e.category === "购物" || e.category === "Shopping" ? "Shopping" :
-                                  e.category === "休闲" || e.category === "Leisure" ? "Leisure" : e.category;
-
-                if (costs[mappedCat] !== undefined) {
-                    costs[mappedCat] += parseFloat(e.cost || 0);
-                    totalSpent += parseFloat(e.cost || 0);
-                }
-            });
-
-            if (totalSpent === 0) {
-                splitBar.innerHTML = `<div class="bg-slate-200 w-full h-full text-center text-[10px] text-slate-400 leading-5">No current budget entries</div>`;
-                return;
-            }
-
-            categories.forEach(cat => {
-                const value = costs[cat];
-                if (value > 0) {
-                    const percent = (value / totalSpent) * 100;
-                    
-                    // Render visual split segments
-                    const segment = document.createElement("div");
-                    segment.className = `${colors[cat]} h-full transition-all duration-300`;
-                    segment.style.width = `${percent}%`;
-                    segment.title = `${cat}: £${value} (${percent.toFixed(1)}%)`;
-                    splitBar.appendChild(segment);
-
-                    // Render dynamic corresponding Legends
-                    const legendItem = document.createElement("div");
-                    legendItem.className = "flex items-center space-x-1.5";
-                    legendItem.innerHTML = `
-                        <span class="w-2.5 h-2.5 rounded-full ${colors[cat]}"></span>
-                        <span class="${textColors[cat]} font-bold">${cat}</span>
-                        <span class="text-slate-400 font-medium">£${value} (${Math.round(percent)}%)</span>
-                    `;
-                    splitLegend.appendChild(legendItem);
-                }
-            });
-        }
-
-        // ======================= Dashboard Render Core =======================
-        function renderDashboard() {
-            const trip = getCurrentTrip();
-            if (!trip) return;
-
-            document.getElementById("dash-trip-name").innerText = trip.destination;
-            
-            const startDate = new Date(trip.startDate);
-            const endDate = new Date(startDate);
-            endDate.setDate(startDate.getDate() + (trip.daysCount - 1));
-            document.getElementById("dash-trip-dates").innerText = `${formatDate(startDate)} - ${formatDate(endDate)}`;
-
-            const today = new Date();
-            today.setHours(0,0,0,0);
-            const startTime = new Date(trip.startDate);
-            startTime.setHours(0,0,0,0);
-            const diffTime = startTime - today;
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            const countdownEl = document.getElementById("dash-countdown");
-            if (diffDays > 0) {
-                countdownEl.innerText = diffDays;
-            } else if (diffDays === 0) {
-                countdownEl.innerText = "Today";
-            } else {
-                countdownEl.innerText = "Past";
-            }
-
-            let totalSpent = 0;
-            trip.events.forEach(e => {
-                totalSpent += parseFloat(e.cost || 0);
-            });
-            document.getElementById("dash-spent").innerText = "£ " + totalSpent.toLocaleString();
-            document.getElementById("dash-budget").innerText = "£ " + trip.budget.toLocaleString();
-            
-            const progressPercent = Math.min((totalSpent / trip.budget) * 100, 100);
-            const progressBar = document.getElementById("dash-budget-progress");
-            progressBar.style.width = progressPercent + "%";
-            if (progressPercent >= 100) {
-                progressBar.className = "bg-rose-500 h-2.5 rounded-full transition-all duration-500";
-            } else if (progressPercent >= 80) {
-                progressBar.className = "bg-amber-500 h-2.5 rounded-full transition-all duration-500";
-            } else {
-                progressBar.className = "bg-teal-500 h-2.5 rounded-full transition-all duration-500";
-            }
-
-            const cityName = trip.cityQuery || "London";
-            document.getElementById("dash-city-name").innerText = cityName;
-            const weather = mockWeatherData[cityName] || mockWeatherData["London"];
-            document.getElementById("dash-weather-temp").innerText = weather.temp + "°C";
-            document.getElementById("dash-weather-icon").innerText = weather.icon;
-            document.getElementById("dash-weather-desc").innerText = weather.desc;
-
-            // Base currency is GBP, show rates relative to it
-            const usdRate = (1 * exchangeRates.USD).toFixed(2);
-            const jpyRate = (1 * exchangeRates.JPY).toFixed(2);
-            document.getElementById("dash-rate-usd").innerText = usdRate + " USD";
-            document.getElementById("dash-rate-jpy").innerText = jpyRate + " JPY";
-
-            const todayEventsContainer = document.getElementById("dash-today-events");
-            todayEventsContainer.innerHTML = "";
-
-            const day1Events = trip.events.filter(e => e.day === 1).sort((a,b) => a.time.localeCompare(b.time));
-            if (day1Events.length === 0) {
-                todayEventsContainer.innerHTML = `
-                    <div class="text-center py-6 text-slate-400 text-sm">
-                        🌸 Day 1 has no current events scheduled. Go to "Itinerary Planner" to add activities!
-                    </div>
-                `;
-            } else {
-                day1Events.forEach(evt => {
-                    const mappedCat = evt.category === "景点" || evt.category === "Sights" ? "Sights" :
-                                      evt.category === "美食" || evt.category === "Dining" ? "Dining" :
-                                      evt.category === "住宿" || evt.category === "Hotel" ? "Hotel" :
-                                      evt.category === "交通" || evt.category === "Transport" ? "Transport" :
-                                      evt.category === "购物" || evt.category === "Shopping" ? "Shopping" :
-                                      evt.category === "休闲" || evt.category === "Leisure" ? "Leisure" : evt.category;
-
-                    const categoryColors = {
-                        "Sights": "bg-emerald-50 text-emerald-600 border-emerald-100",
-                        "Dining": "bg-amber-50 text-amber-600 border-amber-100",
-                        "Hotel": "bg-indigo-50 text-indigo-600 border-indigo-100",
-                        "Transport": "bg-rose-50 text-rose-600 border-rose-100",
-                        "Shopping": "bg-fuchsia-50 text-fuchsia-600 border-fuchsia-100",
-                        "Leisure": "bg-sky-50 text-sky-600 border-sky-100"
-                    };
-                    const colorClass = categoryColors[mappedCat] || "bg-slate-50 text-slate-600 border-slate-100";
-
-                    const div = document.createElement("div");
-                    div.className = "relative pl-8 transition duration-150 group";
-                    div.innerHTML = `
-                        <span class="absolute left-[9px] top-1.5 w-3.5 h-3.5 rounded-full bg-teal-500 border-4 border-white shadow-sm z-10"></span>
-                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-50/50 hover:bg-slate-50 border border-slate-100 p-3.5 rounded-xl transition gap-2">
-                            <div class="flex items-start space-x-3">
-                                <span class="text-xs font-bold text-teal-600 bg-teal-50 px-2 py-1 rounded-lg shrink-0 mt-0.5">${evt.time}</span>
-                                <div>
-                                    <h5 class="font-bold text-slate-800 text-sm group-hover:text-teal-600 transition">${evt.title}</h5>
-                                    <p class="text-xs text-slate-400 mt-1 flex items-center">
-                                        <svg class="w-3.5 h-3.5 mr-1 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
-                                        <span>${evt.location}</span>
+                        <!-- TAB 3 -->
+                        <div id="panel-writer" class="hidden space-y-4">
+                            <div class="panel-rule bg-paper-50/90 border border-ink-900/10 rounded-lg p-5">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <i data-lucide="sparkles" class="text-sage-600 w-4 h-4"></i>
+                                    <h3 class="font-display font-semibold text-ink-900 text-lg">Literature Review Synthesis Draft</h3>
+                                </div>
+                                <p class="text-ink-600 text-sm mb-4">Generate a formatted synthesis statement from your loaded papers.</p>
+
+                                <div class="flex flex-wrap gap-2 mb-4">
+                                    <button onclick="generateDraftParagraph('method')" class="bg-sage-50 hover:bg-sage-100 text-sage-700 border border-sage-200 px-3 py-1.5 rounded-md text-sm font-semibold transition-all">
+                                        Generate Method Synthesis
+                                    </button>
+                                    <button onclick="generateDraftParagraph('finding')" class="bg-sage-50 hover:bg-sage-100 text-sage-700 border border-sage-200 px-3 py-1.5 rounded-md text-sm font-semibold transition-all">
+                                        Generate Findings Synthesis
+                                    </button>
+                                    <button onclick="generateDraftParagraph('limit')" class="bg-sage-50 hover:bg-sage-100 text-sage-700 border border-sage-200 px-3 py-1.5 rounded-md text-sm font-semibold transition-all">
+                                        Generate Critical Gap Review
+                                    </button>
+                                </div>
+
+                                <div class="bg-white p-4 rounded-md border border-ink-900/10 relative">
+                                    <button onclick="copyDraftText()" class="absolute top-2 right-2 p-1.5 hover:bg-sage-50 text-ink-600 hover:text-ink-900 rounded transition-colors" title="Copy to Clipboard">
+                                        <i data-lucide="copy" class="w-4 h-4"></i>
+                                    </button>
+                                    <p id="draft-output-text" class="text-sm text-ink-800 leading-relaxed pr-8 font-display">
+                                        Click one of the buttons above to instantly write a formatted synthesis paragraph. The draft blends findings and formats academic citations from your uploaded documents.
                                     </p>
                                 </div>
                             </div>
-                            <div class="flex items-center space-x-2 self-end sm:self-auto">
-                                <span class="text-xs font-semibold px-2 py-0.5 rounded-full border ${colorClass}">${mappedCat}</span>
-                                <span class="text-xs font-bold text-slate-500">£${evt.cost}</span>
-                            </div>
-                        </div>
-                    `;
-                    todayEventsContainer.appendChild(div);
-                });
-            }
-
-            renderBudgetSplitVisual(trip);
-        }
-
-        // ======================= Itinerary Core =======================
-        function renderItinerary() {
-            const trip = getCurrentTrip();
-            if (!trip) return;
-
-            document.getElementById("itin-stat-days").innerText = `${trip.daysCount} Days`;
-            
-            let totalSpent = 0;
-            const catCount = {};
-            trip.events.forEach(e => {
-                totalSpent += parseFloat(e.cost || 0);
-                const mappedCat = e.category === "景点" || e.category === "Sights" ? "Sights" :
-                                  e.category === "美食" || e.category === "Dining" ? "Dining" :
-                                  e.category === "住宿" || e.category === "Hotel" ? "Hotel" :
-                                  e.category === "交通" || e.category === "Transport" ? "Transport" :
-                                  e.category === "购物" || e.category === "Shopping" ? "Shopping" :
-                                  e.category === "休闲" || e.category === "Leisure" ? "Leisure" : e.category;
-                catCount[mappedCat] = (catCount[mappedCat] || 0) + parseFloat(e.cost || 0);
-            });
-            document.getElementById("itin-stat-spent").innerText = `£ ${totalSpent.toLocaleString()}`;
-
-            let mainCategory = "No spent allocation";
-            let maxVal = -1;
-            Object.keys(catCount).forEach(cat => {
-                if (catCount[cat] > maxVal && catCount[cat] > 0) {
-                    maxVal = catCount[cat];
-                    mainCategory = `${cat} (£${maxVal})`;
-                }
-            });
-            document.getElementById("itin-stat-category").innerText = mainCategory;
-
-            // Render Stepper Navigation Timeline
-            const stepsContainer = document.getElementById("itin-nav-steps-container");
-            stepsContainer.innerHTML = "";
-            const daysCount = trip.daysCount;
-            const dayIcons = ["🛫", "⛩️", "🛍️", "🍱", "🧳", "🌲", "☕", "🏔️", "🏛️", "🛥️"];
-
-            for (let i = 1; i <= daysCount; i++) {
-                const stepNode = document.createElement("button");
-                stepNode.onclick = () => selectItineraryDay(i);
-                
-                const isActive = (i === selectedDay);
-                const isCompleted = (i < selectedDay);
-                const dayEventCount = trip.events.filter(e => e.day === i).length;
-
-                let iconColorClass = "bg-slate-100 text-slate-400 border-slate-200";
-                let textColorClass = "text-slate-400 font-medium";
-                if (isActive) {
-                    iconColorClass = "bg-teal-500 text-white border-teal-500 ring-4 ring-teal-100 scale-110";
-                    textColorClass = "text-teal-600 font-bold scale-105";
-                } else if (isCompleted) {
-                    iconColorClass = "bg-emerald-50 text-emerald-600 border-emerald-300";
-                    textColorClass = "text-emerald-600 font-semibold";
-                }
-
-                const dayIcon = dayIcons[(i - 1) % dayIcons.length];
-
-                stepNode.className = "flex flex-col items-center flex-1 focus:outline-none transition-all duration-300 shrink-0";
-                stepNode.innerHTML = `
-                    <div class="flex items-center justify-center w-11 h-11 rounded-full border-2 ${iconColorClass} transition-all duration-200 text-lg shadow-sm">
-                        <span>${dayIcon}</span>
-                    </div>
-                    <span class="text-xs mt-2 ${textColorClass}">Day ${i}</span>
-                    <span class="text-[10px] text-slate-400 px-1.5 py-0.5 bg-slate-100 rounded-md mt-1">${dayEventCount} Events</span>
-                `;
-                stepsContainer.appendChild(stepNode);
-            }
-
-            const progressPercent = daysCount > 1 ? ((selectedDay - 1) / (daysCount - 1)) * 100 : 0;
-            document.getElementById("itin-nav-progress").style.width = `calc(${progressPercent}% - 24px)`;
-
-            document.getElementById("itin-current-day-title").innerText = `Day ${selectedDay} Schedule Planner`;
-            const dateCursor = new Date(trip.startDate);
-            dateCursor.setDate(dateCursor.getDate() + (selectedDay - 1));
-            document.getElementById("itin-current-day-date").innerText = `Date scheduled: ${formatDate(dateCursor)}`;
-
-            let dayBudgetSum = 0;
-            trip.events.filter(e => e.day === selectedDay).forEach(e => {
-                dayBudgetSum += parseFloat(e.cost || 0);
-            });
-            document.getElementById("itin-current-day-budget").innerText = `Current Day Spent: £${dayBudgetSum.toLocaleString()}`;
-
-            renderLocationsView(trip);
-
-            // Detailed Schedule List rendering
-            const eventsListContainer = document.getElementById("itin-events-list");
-            eventsListContainer.innerHTML = "";
-
-            const dayEvents = trip.events.filter(e => e.day === selectedDay).sort((a,b) => a.time.localeCompare(b.time));
-            if (dayEvents.length === 0) {
-                eventsListContainer.innerHTML = `
-                    <div class="flex flex-col items-center justify-center py-16 text-slate-400 space-y-3">
-                        <span class="text-4xl">🏝️</span>
-                        <p class="text-sm font-medium">There is currently no event planned for Day ${selectedDay}.</p>
-                        <button onclick="openActivityModal()" class="text-xs bg-teal-500 text-white px-3 py-1.5 rounded-lg font-bold hover:bg-teal-600 transition shadow-sm">Add Event Now</button>
-                    </div>
-                `;
-            } else {
-                dayEvents.forEach(evt => {
-                    const mappedCat = evt.category === "景点" || evt.category === "Sights" ? "Sights" :
-                                      evt.category === "美食" || evt.category === "Dining" ? "Dining" :
-                                      evt.category === "住宿" || evt.category === "Hotel" ? "Hotel" :
-                                      evt.category === "交通" || evt.category === "Transport" ? "Transport" :
-                                      evt.category === "购物" || evt.category === "Shopping" ? "Shopping" :
-                                      evt.category === "休闲" || evt.category === "Leisure" ? "Leisure" : evt.category;
-
-                    const categoryColors = {
-                        "Sights": "bg-emerald-50 text-emerald-600 border-emerald-100",
-                        "Dining": "bg-amber-50 text-amber-600 border-amber-100",
-                        "Hotel": "bg-indigo-50 text-indigo-600 border-indigo-100",
-                        "Transport": "bg-rose-50 text-rose-600 border-rose-100",
-                        "Shopping": "bg-fuchsia-50 text-fuchsia-600 border-fuchsia-100",
-                        "Leisure": "bg-sky-50 text-sky-600 border-sky-100"
-                    };
-                    const colorClass = categoryColors[mappedCat] || "bg-slate-50 text-slate-600 border-slate-100";
-
-                    const div = document.createElement("div");
-                    div.className = "relative pl-8 transition duration-200 group";
-                    div.innerHTML = `
-                        <span class="absolute left-[9px] top-2 w-4 h-4 rounded-full bg-white border-4 border-teal-500 shadow-md group-hover:bg-teal-500 transition-colors z-10"></span>
-                        <div class="bg-slate-50 hover:bg-white border border-slate-100 hover:border-slate-200 rounded-2xl p-4 transition-all hover:shadow-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                            <div class="space-y-1.5 flex-1">
-                                <div class="flex flex-wrap items-center gap-2">
-                                    <span class="text-xs font-bold text-teal-600 bg-teal-50 border border-teal-100 px-2 py-0.5 rounded-lg">${evt.time}</span>
-                                    <span class="text-xs font-semibold border ${colorClass} px-2 py-0.5 rounded-full">${mappedCat}</span>
-                                    <h4 class="font-bold text-slate-800 text-base group-hover:text-teal-600 transition">${evt.title}</h4>
-                                </div>
-                                <div class="flex flex-wrap items-center text-xs text-slate-400 gap-4 pt-1">
-                                    <span class="flex items-center">
-                                        <svg class="w-3.5 h-3.5 mr-1 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
-                                        Place: <strong class="text-slate-600 ml-1">${evt.location}</strong>
-                                    </span>
-                                    ${evt.notes ? `<span class="bg-slate-100/80 text-slate-500 px-2.5 py-0.5 rounded font-medium">📝 ${evt.notes}</span>` : ""}
-                                </div>
-                            </div>
-                            <div class="flex items-center justify-between w-full sm:w-auto border-t sm:border-t-0 border-slate-100 pt-2 sm:pt-0 shrink-0">
-                                <div class="text-right sm:mr-4">
-                                    <p class="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Planned cost</p>
-                                    <p class="font-black text-slate-700">£${evt.cost}</p>
-                                </div>
-                                <div class="flex items-center space-x-1">
-                                    <button onclick="editActivity('${evt.id}')" class="text-slate-300 hover:text-indigo-500 p-1.5 rounded-lg hover:bg-indigo-50 transition" title="Modify Activity">
-                                        <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                                    </button>
-                                    <button onclick="deleteActivity('${evt.id}')" class="text-slate-300 hover:text-rose-500 p-1.5 rounded-lg hover:bg-rose-50 transition" title="Delete Activity">
-                                        <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    eventsListContainer.appendChild(div);
-                });
-            }
-        }
-
-        function selectItineraryDay(dayNumber) {
-            selectedDay = dayNumber;
-            renderItinerary();
-        }
-
-        // ======================= Coordinates trail rendering =======================
-        function renderLocationsView(trip) {
-            const listContainer = document.getElementById("itin-locations-list");
-            listContainer.innerHTML = "";
-            
-            const sortedEvents = [...trip.events].sort((a,b) => {
-                if(a.day !== b.day) return a.day - b.day;
-                return a.time.localeCompare(b.time);
-            });
-
-            const uniqueLocations = [];
-            sortedEvents.forEach(evt => {
-                if(!uniqueLocations.some(loc => loc.name === evt.location)) {
-                    uniqueLocations.push({
-                        name: evt.location,
-                        day: evt.day,
-                        category: evt.category,
-                        title: evt.title
-                    });
-                }
-            });
-
-            if (uniqueLocations.length === 0) {
-                listContainer.innerHTML = `
-                    <p class="text-xs text-slate-400 text-center py-4">No locations mapped yet.</p>
-                `;
-                drawRouteSVG([]);
-                return;
-            }
-
-            uniqueLocations.forEach((loc, index) => {
-                const item = document.createElement("div");
-                item.className = "flex items-center justify-between p-2.5 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-100 transition cursor-pointer";
-                item.onclick = () => {
-                    selectItineraryDay(loc.day);
-                };
-                
-                item.innerHTML = `
-                    <div class="flex items-center space-x-2 overflow-hidden">
-                        <span class="w-5 h-5 flex items-center justify-center bg-teal-100 text-teal-700 text-[10px] font-bold rounded-full shrink-0">${index + 1}</span>
-                        <div class="truncate">
-                            <p class="text-xs font-bold text-slate-700 truncate">${loc.name}</p>
-                            <p class="text-[9px] text-slate-400">Day ${loc.day} - ${loc.title}</p>
                         </div>
                     </div>
-                    <span class="text-[9px] px-1.5 py-0.5 bg-white border rounded text-slate-500 shrink-0">Day ${loc.day}</span>
-                `;
-                listContainer.appendChild(item);
+                </div>
+            </div>
+        </section>
+
+        <!-- Pricing -->
+        <section id="pricing" class="py-16 md:py-20 border-t border-ink-900/10 bg-paper-50/60">
+            <div class="max-w-5xl mx-auto px-4 text-center">
+                <h2 class="font-display text-3xl sm:text-4xl font-semibold text-ink-900 tracking-tight">Simple pricing for busy researchers</h2>
+                <p class="text-ink-600 text-base mt-2 max-w-md mx-auto">Get your literature review structured, cited, and checked.</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12 text-left">
+                    <div class="border border-ink-900/10 p-6 rounded-lg bg-white flex flex-col justify-between">
+                        <div>
+                            <h3 class="font-bold text-ink-600 text-xs uppercase tracking-[0.14em]">Starter</h3>
+                            <p class="text-sm text-ink-600 mt-1">Test the pipeline workflow</p>
+                            <div class="my-5 flex items-baseline gap-1">
+                                <span class="font-display text-4xl font-semibold text-ink-900">$0</span>
+                                <span class="text-xs text-ink-600">/ free trial</span>
+                            </div>
+                            <ul class="space-y-2 text-sm text-ink-800 font-medium">
+                                <li class="flex items-center gap-1.5"><i data-lucide="check" class="text-sage-600 w-3.5 h-3.5"></i> Extract 2 paper PDFs</li>
+                                <li class="flex items-center gap-1.5"><i data-lucide="check" class="text-sage-600 w-3.5 h-3.5"></i> Custom interactive wizard</li>
+                            </ul>
+                        </div>
+                        <a href="#workspace" class="mt-6 w-full text-center bg-sage-50 hover:bg-sage-100 text-ink-800 py-2.5 rounded-md text-sm font-bold transition-all block border border-sage-200">Get Free Trial</a>
+                    </div>
+
+                    <div class="border-2 border-ink-900 p-6 rounded-lg bg-white flex flex-col justify-between relative shadow-soft">
+                        <span class="absolute -top-3 left-1/2 -translate-x-1/2 bg-ink-900 text-paper-50 text-[10px] font-bold px-2.5 py-0.5 rounded uppercase tracking-wider">Most Selected</span>
+                        <div>
+                            <h3 class="font-bold text-sage-700 text-xs uppercase tracking-[0.14em]">Researcher</h3>
+                            <p class="text-sm text-ink-600 mt-1">For university term essays</p>
+                            <div class="my-5 flex items-baseline gap-1">
+                                <span class="font-display text-4xl font-semibold text-ink-900">$19</span>
+                                <span class="text-xs text-ink-600">/ user license</span>
+                            </div>
+                            <ul class="space-y-2 text-sm text-ink-800 font-medium">
+                                <li class="flex items-center gap-1.5"><i data-lucide="check" class="text-sage-600 w-3.5 h-3.5"></i> Parse up to 40 PDFs</li>
+                                <li class="flex items-center gap-1.5"><i data-lucide="check" class="text-sage-600 w-3.5 h-3.5"></i> Export matrix comparisons (CSV)</li>
+                                <li class="flex items-center gap-1.5"><i data-lucide="check" class="text-sage-600 w-3.5 h-3.5"></i> Format automatic citations</li>
+                            </ul>
+                        </div>
+                        <button onclick="handleSubscribe('Researcher Plan')" class="mt-6 w-full text-center bg-ink-900 hover:bg-ink-800 text-paper-50 py-2.5 rounded-md text-sm font-bold transition-all">Buy Now</button>
+                    </div>
+
+                    <div class="border border-ink-900/10 p-6 rounded-lg bg-sage-50/40 flex flex-col justify-between">
+                        <div>
+                            <h3 class="font-bold text-ink-600 text-xs uppercase tracking-[0.14em]">Consultant Hybrid</h3>
+                            <p class="text-sm text-ink-600 mt-1">Full thesis review combo</p>
+                            <div class="my-5 flex items-baseline gap-1">
+                                <span class="font-display text-4xl font-semibold text-ink-900">$149</span>
+                                <span class="text-xs text-ink-600">/ package</span>
+                            </div>
+                            <ul class="space-y-2 text-sm text-ink-800 font-medium">
+                                <li class="flex items-center gap-1.5"><i data-lucide="check" class="text-sage-600 w-3.5 h-3.5"></i> Unlimited system PDF access</li>
+                                <li class="flex items-center gap-1.5"><i data-lucide="check" class="text-sage-600 w-3.5 h-3.5"></i> <strong>2× 1-on-1 expert coaching calls</strong></li>
+                                <li class="flex items-center gap-1.5"><i data-lucide="check" class="text-sage-600 w-3.5 h-3.5"></i> Manual review & critique check</li>
+                            </ul>
+                        </div>
+                        <button onclick="handleSubscribe('Consultant Hybrid Package')" class="mt-6 w-full text-center bg-sage-700 hover:bg-sage-600 text-white py-2.5 rounded-md text-sm font-bold transition-all">Select Package</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- How it works -->
+        <section id="how-it-works" class="py-14 md:py-16 border-t border-ink-900/10 text-ink-800">
+            <div class="max-w-3xl mx-auto px-4">
+                <h3 class="font-display text-2xl font-semibold text-ink-900 text-center mb-8">Deploying ScholarPilot Backend</h3>
+
+                <div class="space-y-5">
+                    <div class="border-l-2 border-sage-500 pl-5 py-1">
+                        <h4 class="font-semibold text-ink-900 mb-1">Option A: Direct GPTs Integration</h4>
+                        <p class="text-sm leading-relaxed text-ink-700">Connect this UI to your private GPT custom assistant. Prompt the assistant to match this layout’s schema output to automate content styling with zero maintenance code.</p>
+                    </div>
+
+                    <div class="border-l-2 border-brass-500 pl-5 py-1">
+                        <h4 class="font-semibold text-ink-900 mb-1">Option B: Connecting a No-Code Backend (Coze / Dify)</h4>
+                        <p class="text-sm leading-relaxed text-ink-700">Map your dropzone file parameters to your chosen API endpoint, parse input with Dify/Coze, and return structured extraction strings into the workspace.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-ink-900 text-paper-100/70 py-10 text-sm">
+        <div class="max-w-6xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-sage-600 text-white rounded flex items-center justify-center">
+                    <i data-lucide="graduation-cap" class="w-4 h-4"></i>
+                </div>
+                <div>
+                    <span class="font-display font-semibold text-paper-50 text-base">ScholarPilot Studio</span>
+                    <p class="text-xs">© 2026 ScholarPilot. Built for streamlined research workflows.</p>
+                </div>
+            </div>
+
+            <div class="flex gap-5 font-medium text-paper-100/60">
+                <a href="#" class="hover:text-paper-50 transition-colors">Integrity Clause</a>
+                <a href="#" class="hover:text-paper-50 transition-colors">Privacy Statement</a>
+                <a href="#" class="hover:text-paper-50 transition-colors">Support Portal</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+
+        let currentSelectedPaper = "paper-1";
+
+        function triggerNotification(message) {
+            const toast = document.getElementById('toast');
+            const label = document.getElementById('toast-message');
+            label.innerText = message;
+
+            toast.classList.remove('-translate-y-24', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('-translate-y-24', 'opacity-0');
+            }, 2500);
+        }
+
+        function setTabButtonState(activeBtn) {
+            const buttons = [
+                document.getElementById('btn-tab-summary'),
+                document.getElementById('btn-tab-matrix'),
+                document.getElementById('btn-tab-writer')
+            ];
+            buttons.forEach(btn => {
+                btn.className = "px-3 py-1.5 rounded font-semibold transition-all tab-idle flex items-center gap-1.5";
             });
-
-            drawRouteSVG(uniqueLocations);
+            activeBtn.className = "px-3 py-1.5 rounded font-semibold transition-all tab-active flex items-center gap-1.5";
+            lucide.createIcons();
         }
 
-        function drawRouteSVG(locations) {
-            const svg = document.getElementById("route-svg-line");
-            svg.innerHTML = "";
+        function switchTab(activeTab) {
+            const panelSummary = document.getElementById('panel-summary');
+            const panelMatrix = document.getElementById('panel-matrix');
+            const panelWriter = document.getElementById('panel-writer');
 
-            if (locations.length === 0) return;
+            panelSummary.classList.add('hidden');
+            panelMatrix.classList.add('hidden');
+            panelWriter.classList.add('hidden');
 
-            const w = svg.clientWidth || 240;
-            const h = svg.clientHeight || 128;
-
-            const points = [];
-            const count = locations.length;
-            
-            if (count === 1) {
-                points.push({ x: w / 2, y: h / 2, name: locations[0].name });
-            } else {
-                for (let i = 0; i < count; i++) {
-                    const percent = i / (count - 1);
-                    const x = 24 + percent * (w - 48);
-                    const y = h / 2 + Math.sin(percent * Math.PI * 1.5) * (h / 4);
-                    points.push({ x, y, name: locations[i].name });
-                }
+            if (activeTab === 'tab-summary') {
+                panelSummary.classList.remove('hidden');
+                setTabButtonState(document.getElementById('btn-tab-summary'));
+                triggerNotification("Viewing individual paper extraction details.");
+            } else if (activeTab === 'tab-matrix') {
+                panelMatrix.classList.remove('hidden');
+                setTabButtonState(document.getElementById('btn-tab-matrix'));
+                renderMatrix();
+                triggerNotification("Viewing comparative grid.");
+            } else if (activeTab === 'tab-writer') {
+                panelWriter.classList.remove('hidden');
+                setTabButtonState(document.getElementById('btn-tab-writer'));
+                triggerNotification("Viewing AI Drafting tool.");
             }
-
-            if (count > 1) {
-                let dPath = `M ${points[0].x} ${points[0].y}`;
-                for (let i = 1; i < count; i++) {
-                    dPath += ` L ${points[i].x} ${points[i].y}`;
-                }
-
-                const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                path.setAttribute("d", dPath);
-                path.setAttribute("fill", "none");
-                path.setAttribute("stroke", "#14b8a6"); 
-                path.setAttribute("stroke-width", "2");
-                path.setAttribute("stroke-dasharray", "4,4");
-                svg.appendChild(path);
-            }
-
-            points.forEach((pt, idx) => {
-                const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
-
-                const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-                circle.setAttribute("cx", pt.x);
-                circle.setAttribute("cy", pt.y);
-                circle.setAttribute("r", "8");
-                circle.setAttribute("fill", "#10b981"); 
-                circle.setAttribute("stroke", "white");
-                circle.setAttribute("stroke-width", "2");
-
-                const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                text.setAttribute("x", pt.x);
-                text.setAttribute("y", pt.y + 3);
-                text.setAttribute("fill", "white");
-                text.setAttribute("font-size", "8px");
-                text.setAttribute("font-weight", "bold");
-                text.setAttribute("text-anchor", "middle");
-                text.textContent = idx + 1;
-
-                const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
-                title.textContent = pt.name;
-
-                group.appendChild(circle);
-                group.appendChild(text);
-                group.appendChild(title);
-                svg.appendChild(group);
-            });
         }
 
-        // ======================= Edit metadata controls =======================
-        function openEditTripModal() {
-            const trip = getCurrentTrip();
-            if (!trip) return;
+        function selectPaper(paperId) {
+            currentSelectedPaper = paperId;
+            const paper = mockPapers.find(p => p.id === paperId);
+            if (!paper) return;
 
-            document.getElementById("edit-trip-destination").value = trip.destination;
-            document.getElementById("edit-trip-budget").value = trip.budget;
-            document.getElementById("edit-trip-start").value = trip.startDate;
-            document.getElementById("edit-trip-days").value = trip.daysCount;
-
-            document.getElementById("modal-edit-trip").classList.remove("hidden");
-        }
-
-        function closeEditTripModal() {
-            document.getElementById("modal-edit-trip").classList.add("hidden");
-        }
-
-        function saveEditTrip() {
-            const trip = getCurrentTrip();
-            if (!trip) return;
-
-            const dest = document.getElementById("edit-trip-destination").value.trim();
-            const budget = parseFloat(document.getElementById("edit-trip-budget").value);
-            const start = document.getElementById("edit-trip-start").value;
-            const days = parseInt(document.getElementById("edit-trip-days").value);
-
-            if (!dest) {
-                showToast("Please specify trip target title!", "warning");
-                return;
-            }
-            if (isNaN(budget) || budget <= 0) {
-                showToast("Please write a clean valid budget amount!", "warning");
-                return;
-            }
-            if (!start) {
-                showToast("Please choose your departure date!", "warning");
-                return;
-            }
-            if (isNaN(days) || days <= 0 || days > 30) {
-                showToast("Duration limit restricted to 1-30 days!", "warning");
-                return;
-            }
-
-            trip.destination = dest;
-            trip.budget = budget;
-            trip.startDate = start;
-            
-            if (days < trip.daysCount) {
-                trip.events.forEach(evt => {
-                    if (evt.day > days) {
-                        evt.day = days;
+            mockPapers.forEach(p => {
+                const btn = document.getElementById(`list-${p.id}`);
+                if (!btn) return;
+                if (p.id === paperId) {
+                    btn.className = "w-full text-left p-3 rounded-md border paper-selected transition-all relative text-sm";
+                    if (!btn.querySelector('.bg-sage-500')) {
+                        const indicator = document.createElement('div');
+                        indicator.className = "absolute top-3 right-3 w-1.5 h-1.5 bg-sage-500 rounded-full";
+                        btn.appendChild(indicator);
                     }
-                });
-            }
-            trip.daysCount = days;
-
-            let cityQuery = "Tokyo";
-            if (dest.toLowerCase().includes("tokyo")) cityQuery = "Tokyo";
-            else if (dest.toLowerCase().includes("beijing")) cityQuery = "Beijing";
-            else if (dest.toLowerCase().includes("london")) cityQuery = "London";
-            trip.cityQuery = cityQuery;
-
-            saveTripsToStorage();
-            renderTripSelector();
-            renderDashboard();
-            renderItinerary();
-            updateWeatherByCurrentTrip();
-            closeEditTripModal();
-            showToast("Metadata saved successfully! ✍️");
-        }
-
-        // ======================= Event Nodes Creation =======================
-        function openActivityModal(eventId = null) {
-            const trip = getCurrentTrip();
-            const daySelect = document.getElementById("act-day-select");
-            daySelect.innerHTML = "";
-            
-            for (let i = 1; i <= trip.daysCount; i++) {
-                const opt = document.createElement("option");
-                opt.value = i;
-                opt.innerText = `Day ${i}`;
-                if (i === selectedDay) opt.selected = true;
-                daySelect.appendChild(opt);
-            }
-
-            if (eventId) {
-                currentEditEventId = eventId;
-                const evt = trip.events.find(e => e.id === eventId);
-                
-                document.getElementById("activity-modal-title").innerText = "Configure Event Details";
-                document.getElementById("act-day-select").value = evt.day;
-                document.getElementById("act-time").value = evt.time;
-                document.getElementById("act-title").value = evt.title;
-                document.getElementById("act-location").value = evt.location;
-                document.getElementById("act-cost").value = evt.cost;
-                document.getElementById("act-category").value = evt.category;
-                document.getElementById("act-notes").value = evt.notes || "";
-            } else {
-                currentEditEventId = null;
-                document.getElementById("activity-modal-title").innerText = "Add New Activity Landmark";
-                document.getElementById("act-time").value = "09:00";
-                document.getElementById("act-title").value = "";
-                document.getElementById("act-location").value = "";
-                document.getElementById("act-cost").value = "0";
-                document.getElementById("act-category").value = "Sights";
-                document.getElementById("act-notes").value = "";
-            }
-
-            document.getElementById("modal-activity").classList.remove("hidden");
-        }
-
-        function closeActivityModal() {
-            document.getElementById("modal-activity").classList.add("hidden");
-        }
-
-        function editActivity(eventId) {
-            openActivityModal(eventId);
-        }
-
-        function saveNewActivity() {
-            const trip = getCurrentTrip();
-            const day = parseInt(document.getElementById("act-day-select").value);
-            const time = document.getElementById("act-time").value;
-            const title = document.getElementById("act-title").value.trim();
-            const location = document.getElementById("act-location").value.trim();
-            const cost = parseFloat(document.getElementById("act-cost").value);
-            const category = document.getElementById("act-category").value;
-            const notes = document.getElementById("act-notes").value.trim();
-
-            if (!title) {
-                showToast("Please input a valid event topic!", "warning");
-                return;
-            }
-            if (!location) {
-                showToast("Please identify target address coordinates!", "warning");
-                return;
-            }
-            if (isNaN(cost) || cost < 0) {
-                showToast("Input correctly estimated cost!", "warning");
-                return;
-            }
-
-            if (currentEditEventId) {
-                const evtIndex = trip.events.findIndex(e => e.id === currentEditEventId);
-                if (evtIndex !== -1) {
-                    trip.events[evtIndex] = {
-                        ...trip.events[evtIndex],
-                        day: day,
-                        time: time || "09:00",
-                        title: title,
-                        location: location,
-                        cost: cost,
-                        category: category,
-                        notes: notes
-                    };
-                    showToast("Event node configured! ✏️");
+                } else {
+                    btn.className = "w-full text-left p-3 rounded-md border border-ink-900/10 bg-white hover:bg-sage-50/50 transition-all text-sm";
+                    const indicator = btn.querySelector('.bg-sage-500');
+                    if (indicator) indicator.remove();
                 }
-            } else {
-                const newEvent = {
-                    id: "event-" + Date.now(),
-                    day: day,
-                    time: time || "09:00",
-                    title: title,
-                    location: location,
-                    cost: cost,
-                    category: category,
-                    notes: notes
-                };
-                trip.events.push(newEvent);
-                showToast("Landmark registered successfully! 🎉");
-            }
-
-            saveTripsToStorage();
-            selectedDay = day; 
-
-            renderDashboard();
-            renderItinerary();
-            closeActivityModal();
-        }
-
-        function deleteActivity(eventId) {
-            const trip = getCurrentTrip();
-            trip.events = trip.events.filter(e => e.id !== eventId);
-            saveTripsToStorage();
-            
-            renderDashboard();
-            renderItinerary();
-            showToast("Landmark event deleted.");
-        }
-
-        // ======================= Create & Terminate Trips =======================
-        function openNewTripModal() {
-            document.getElementById("modal-new-trip").classList.remove("hidden");
-        }
-
-        function closeNewTripModal() {
-            document.getElementById("modal-new-trip").classList.add("hidden");
-        }
-
-        function saveNewTrip() {
-            const dest = document.getElementById("new-trip-destination").value.trim();
-            const budget = parseFloat(document.getElementById("new-trip-budget").value);
-            const start = document.getElementById("new-trip-start").value;
-            const days = parseInt(document.getElementById("new-trip-days").value);
-
-            if (!dest) {
-                showToast("Destination name field is mandatory!", "warning");
-                return;
-            }
-            if (isNaN(budget) || budget <= 0) {
-                showToast("Allocate a valid travel budget!", "warning");
-                return;
-            }
-            if (!start) {
-                showToast("Launch departure date required!", "warning");
-                return;
-            }
-            if (isNaN(days) || days <= 0 || days > 30) {
-                showToast("Duration restricted to 1-30 days limit!", "warning");
-                return;
-            }
-
-            let cityQuery = "Tokyo";
-            if (dest.toLowerCase().includes("tokyo")) cityQuery = "Tokyo";
-            else if (dest.toLowerCase().includes("beijing")) cityQuery = "Beijing";
-            else if (dest.toLowerCase().includes("london")) cityQuery = "London";
-
-            const newTrip = {
-                id: "trip-" + Date.now(),
-                destination: dest,
-                budget: budget,
-                startDate: start,
-                daysCount: days,
-                cityQuery: cityQuery,
-                events: []
-            };
-
-            trips.push(newTrip);
-            currentTripId = newTrip.id;
-            selectedDay = 1;
-
-            saveTripsToStorage();
-            renderTripSelector();
-            renderDashboard();
-            renderItinerary();
-            updateWeatherByCurrentTrip();
-            closeNewTripModal();
-            showToast("Congratulations! New trip formulated: " + dest);
-        }
-
-        function deleteCurrentTrip() {
-            if (trips.length <= 1) {
-                showToast("You must maintain at least one active travel itinerary!", "warning");
-                return;
-            }
-
-            const trip = getCurrentTrip();
-            if (confirm(`Confirm permanent deletion of the itinerary "${trip.destination}"? This operation cannot be undone.`)) {
-                trips = trips.filter(t => t.id !== currentTripId);
-                currentTripId = trips[0].id;
-                selectedDay = 1;
-
-                saveTripsToStorage();
-                renderTripSelector();
-                renderDashboard();
-                renderItinerary();
-                updateWeatherByCurrentTrip();
-                showToast("Itinerary deleted successfully.");
-            }
-        }
-
-        // ======================= Forex Center calculations (Base Currency: GBP) =======================
-        function convertCurrency() {
-            const fromCurr = document.getElementById("exc-from-currency").value;
-            const toCurr = document.getElementById("exc-to-currency").value;
-            const amount = parseFloat(document.getElementById("exc-from-amount").value);
-
-            if (isNaN(amount) || amount <= 0) {
-                document.getElementById("exc-to-amount").innerText = "0.00";
-                return;
-            }
-
-            // amount / exchangeRates[fromCurr] converts 'fromCurr' to GBP base.
-            // then multiplying by exchangeRates[toCurr] converts GBP base to target currency.
-            const amountInGBP = amount / exchangeRates[fromCurr];
-            const result = amountInGBP * exchangeRates[toCurr];
-
-            const formatDecimals = (toCurr === 'JPY' || toCurr === 'KRW') ? 0 : 2;
-            document.getElementById("exc-to-amount").innerText = result.toLocaleString(undefined, { minimumFractionDigits: formatDecimals, maximumFractionDigits: formatDecimals }) + " " + toCurr;
-
-            document.getElementById("quick-convert-title").innerText = `Target Rate (${toCurr})`;
-            renderQuickConversionTable(fromCurr, toCurr);
-        }
-
-        function swapCurrencies() {
-            const fromSelect = document.getElementById("exc-from-currency");
-            const toSelect = document.getElementById("exc-to-currency");
-
-            const temp = fromSelect.value;
-            fromSelect.value = toSelect.value;
-            toSelect.value = temp;
-
-            convertCurrency();
-            showToast("Exchange conversion inverted.");
-        }
-
-        function renderQuickConversionTable(from, to) {
-            const quickTable = document.getElementById("exc-quick-table");
-            quickTable.innerHTML = "";
-
-            const sampleAmounts = [10, 50, 100, 1000];
-            sampleAmounts.forEach(amt => {
-                const amountInGBP = amt / exchangeRates[from];
-                const result = amountInGBP * exchangeRates[to];
-                
-                const formatDecimals = (to === 'JPY' || to === 'KRW') ? 0 : 2;
-                const resultFormatted = result.toLocaleString(undefined, { minimumFractionDigits: formatDecimals, maximumFractionDigits: formatDecimals });
-
-                const div = document.createElement("div");
-                div.className = "flex justify-between items-center text-sm text-slate-700 py-1";
-                div.innerHTML = `
-                    <span class="font-bold text-slate-600">${amt} ${from}</span>
-                    <span class="font-extrabold text-slate-800">${resultFormatted} ${to}</span>
-                `;
-                quickTable.appendChild(div);
             });
+
+            document.getElementById('active-title-meta').innerText = `${paper.author} (${paper.year})`;
+            document.getElementById('active-title').innerText = paper.title;
+            document.getElementById('active-meta').innerText = `${paper.author} (${paper.year})`;
+            document.getElementById('active-q').innerText = paper.questions;
+            document.getElementById('active-method').innerText = paper.methodology;
+            document.getElementById('active-findings').innerText = paper.findings;
+            document.getElementById('active-limit').innerText = paper.limitations;
+            document.getElementById('active-utility').innerText = paper.utility;
+
+            triggerNotification(`Selected context switched to: ${paper.author}`);
         }
 
-        function renderExchangeRates() {
-            convertCurrency();
+        function copyCitationText() {
+            const paper = mockPapers.find(p => p.id === currentSelectedPaper);
+            const standardCitation = `${paper.author} (${paper.year}). ${paper.title}.`;
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(standardCitation).then(() => {
+                    triggerNotification("Citation text copied to clipboard!");
+                }).catch(() => fallbackCopy(standardCitation, "Citation text copied to clipboard!"));
+            } else {
+                fallbackCopy(standardCitation, "Citation text copied to clipboard!");
+            }
         }
 
-        // ======================= Live Weather Forecasts =======================
-        function renderWeatherSection(cityName = "London") {
-            const data = mockWeatherData[cityName] || mockWeatherData["London"];
-            
-            document.getElementById("wea-cur-city").innerText = cityName;
-            document.getElementById("wea-cur-icon").innerText = data.icon;
-            document.getElementById("wea-cur-temp").innerText = data.temp + "°C";
-            document.getElementById("wea-cur-desc").innerText = data.desc;
-            document.getElementById("wea-cur-humidity").innerText = data.humidity;
-            document.getElementById("wea-cur-wind").innerText = data.wind;
+        function fallbackCopy(text, message) {
+            const tempInput = document.createElement("textarea");
+            tempInput.value = text;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand("copy");
+            document.body.removeChild(tempInput);
+            triggerNotification(message);
+        }
 
-            const sevenDaysContainer = document.getElementById("wea-seven-days");
-            sevenDaysContainer.innerHTML = "";
-            data.sevenDays.forEach(day => {
-                const card = document.createElement("div");
-                card.className = "bg-slate-50 rounded-2xl p-3 text-center border border-slate-100 flex flex-col justify-between h-32 hover:border-teal-200 transition duration-150 cursor-pointer";
-                card.innerHTML = `
-                    <p class="text-xs font-bold text-slate-400 uppercase">${day.day}</p>
-                    <span class="text-3xl my-1.5 inline-block">${day.icon}</span>
-                    <div>
-                        <p class="text-xs font-black text-slate-700">${day.temp}</p>
-                        <p class="text-[9px] font-semibold text-slate-500 mt-0.5">${day.desc}</p>
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const box = document.getElementById('loader-box');
+            const title = document.getElementById('loader-title');
+            const desc = document.getElementById('loader-desc');
+
+            box.classList.remove('hidden');
+            title.innerText = "Extracting details...";
+            desc.innerText = `Ingesting ${file.name.substring(0, 15)}...`;
+
+            setTimeout(() => {
+                title.innerText = "Structuring metrics...";
+                desc.innerText = "Locating Method, Sample & Hypothesis...";
+            }, 1000);
+
+            setTimeout(() => {
+                box.classList.add('hidden');
+
+                const newId = "paper-" + (mockPapers.length + 1);
+                const fileCleanName = file.name.replace(/\.[^/.]+$/, "");
+
+                const customInjectedPaper = {
+                    id: newId,
+                    title: fileCleanName,
+                    author: "Uploaded Reference",
+                    year: "2026",
+                    questions: "To analyze continuous workflows and find scalable parameters within target literature contexts.",
+                    methodology: "Literature review coupled with analytical benchmarking and automatic parsing metrics.",
+                    findings: "Implementing high-fidelity automated extraction structures reduces academic reading loops by up to 80%.",
+                    limitations: "System parsing is subject to the digital resolution quality of the uploaded document.",
+                    utility: "Use this to reinforce methodology arguments favoring algorithmic data parsing platforms.",
+                    shortLabel: fileCleanName,
+                    shortDesc: "Uploaded PDF Document",
+                    matrixFocus: "Automated extraction of continuous research workflows from uploaded literature.",
+                    matrixMethod: "Literature review with analytical benchmarking and parsing metrics.",
+                    matrixFindings: "High-fidelity automated extraction reduces academic reading loops by up to 80%."
+                };
+
+                mockPapers.push(customInjectedPaper);
+
+                const listContainer = document.getElementById('paper-list-container');
+                const newButton = document.createElement('button');
+                newButton.id = `list-${newId}`;
+                newButton.onclick = () => selectPaper(newId);
+                newButton.className = "w-full text-left p-3 rounded-md border border-ink-900/10 bg-white hover:bg-sage-50/50 transition-all text-sm";
+                newButton.innerHTML = `
+                    <p class="font-bold text-ink-800 line-clamp-1">${fileCleanName}</p>
+                    <p class="text-xs text-ink-600 mt-0.5 line-clamp-1">Uploaded PDF Document</p>
+                `;
+                listContainer.appendChild(newButton);
+
+                selectPaper(newId);
+                renderMatrix();
+                triggerNotification("PDF parsed and extracted successfully!");
+                event.target.value = "";
+            }, 2500);
+        }
+
+        function generateDraftParagraph(mode) {
+            const paper = mockPapers.find(p => p.id === currentSelectedPaper);
+            const outputBox = document.getElementById('draft-output-text');
+            let resultText = "";
+
+            if (mode === 'method') {
+                resultText = `Examining the methodological frameworks, ${paper.author} (${paper.year}) utilizes a specialized design focused on ${paper.methodology.toLowerCase()} This is a reliable approach compared to classic configurations.`;
+            } else if (mode === 'finding') {
+                resultText = `In terms of research outcomes, the investigation conducted by ${paper.author} (${paper.year}) reveals that ${paper.findings.toLowerCase()} These insights provide pivotal empirical support when defining the parameters of our system scope.`;
+            } else if (mode === 'limit') {
+                resultText = `Nevertheless, certain limitations must be noted. As specified by ${paper.author} (${paper.year}), a key constraint involves the fact that ${paper.limitations.toLowerCase()} This creates an academic knowledge gap that our study directly addresses.`;
+            }
+
+            outputBox.innerText = resultText;
+            triggerNotification("AI synthesis drafted! Review the text box.");
+        }
+
+        function copyDraftText() {
+            const text = document.getElementById('draft-output-text').innerText;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                    triggerNotification("Draft copied to clipboard!");
+                }).catch(() => fallbackCopy(text, "Draft copied to clipboard!"));
+            } else {
+                fallbackCopy(text, "Draft copied to clipboard!");
+            }
+        }
+
+        function renderMatrix() {
+            const body = document.getElementById('matrix-body');
+            if (!body) return;
+
+            const papers = mockPapers.slice(0, 3);
+            const rows = [
+                { label: "Research Focus", key: "matrixFocus" },
+                { label: "Methods & Cohort", key: "matrixMethod" },
+                { label: "Main Insights", key: "matrixFindings" }
+            ];
+
+            const colClass = papers.length >= 3
+                ? "grid grid-cols-1 md:grid-cols-4 p-4 gap-3 text-sm"
+                : "grid grid-cols-1 md:grid-cols-3 p-4 gap-3 text-sm";
+
+            body.innerHTML = rows.map(row => {
+                const cells = papers.map(p => `
+                    <div class="p-3 bg-white rounded-md border border-ink-900/10">
+                        <p class="font-semibold text-ink-900 mb-1">${p.author.split(',')[0]} (${p.year}):</p>
+                        <p class="text-ink-700">${p[row.key] || p.questions}</p>
+                    </div>
+                `).join("");
+
+                return `
+                    <div class="${colClass}">
+                        <div class="font-bold text-ink-600 uppercase tracking-[0.12em] text-[10px] flex items-center">${row.label}</div>
+                        ${cells}
                     </div>
                 `;
-                sevenDaysContainer.appendChild(card);
-            });
-
-            document.getElementById("tip-clothing").innerText = data.tips.clothing;
-            document.getElementById("tip-necessity").innerText = data.tips.necessity;
-            document.getElementById("tip-activity").innerText = data.tips.activity;
+            }).join("");
         }
 
-        function updateWeatherByCurrentTrip() {
-            const trip = getCurrentTrip();
-            if (trip) {
-                renderWeatherSection(trip.cityQuery || "London");
-            }
+        function downloadCSV() {
+            triggerNotification("Creating comparative matrix CSV...");
+            const header = ["Paper Title", "Author", "Year", "Purpose", "Methodology", "Key Finding"];
+            const dataRows = [header, ...mockPapers.map(p => [
+                p.title,
+                p.author,
+                p.year,
+                p.questions,
+                p.methodology,
+                p.findings
+            ])];
+
+            const content = "\uFEFF" + dataRows.map(row =>
+                row.map(val => `"${String(val).replace(/"/g, '""')}"`).join(",")
+            ).join("\n");
+
+            const blob = new Blob([content], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const hiddenLink = document.createElement("a");
+            hiddenLink.setAttribute("href", url);
+            hiddenLink.setAttribute("download", "Literature_Comparison_Matrix.csv");
+            document.body.appendChild(hiddenLink);
+            hiddenLink.click();
+            document.body.removeChild(hiddenLink);
+            URL.revokeObjectURL(url);
         }
 
-        function searchCityWeather() {
-            const inputVal = document.getElementById("weather-city-input").value.trim();
-            if (!inputVal) {
-                showToast("Please enter target city query", "warning");
-                return;
-            }
-
-            // Simple standard capitalization
-            const cityName = inputVal.charAt(0).toUpperCase() + inputVal.slice(1);
-
-            if (mockWeatherData[cityName]) {
-                renderWeatherSection(cityName);
-                showToast("Retrieved telemetry for " + cityName);
-            } else {
-                const randomTemps = [
-                    { t: 15, d: "Showers", i: "🌧️", hum: "85%", w: "E Wind · L3" },
-                    { t: 28, d: "Partly Cloudy", i: "🌤️", hum: "52%", w: "S Wind · L2" },
-                    { t: 33, d: "Clear Sky", i: "☀️", hum: "40%", w: "SW Wind · L1" }
-                ];
-                const selectedRandom = randomTemps[Math.floor(Math.random() * randomTemps.length)];
-                mockWeatherData[cityName] = {
-                    temp: selectedRandom.t,
-                    desc: selectedRandom.d,
-                    icon: selectedRandom.i,
-                    humidity: selectedRandom.hum,
-                    wind: selectedRandom.w,
-                    tips: {
-                        clothing: `Current temp is around (${selectedRandom.t}°C). Do carry breathable outfit sets and a windbreaker.`,
-                        necessity: "Carry basic travel supplements, quick compact umbrella, and standard hydration gear.",
-                        activity: "Comfortable atmosphere. An ideal index to venture around local landmark centers."
-                    },
-                    sevenDays: [
-                        { day: "Mon", temp: `${selectedRandom.t-2}/${selectedRandom.t+2}°C`, desc: selectedRandom.d, icon: selectedRandom.i },
-                        { day: "Tue", temp: `${selectedRandom.t-3}/${selectedRandom.t+1}°C`, desc: "Cloudy", icon: "☁️" },
-                        { day: "Wed", temp: `${selectedRandom.t-1}/${selectedRandom.t+3}°C`, desc: "Sunny", icon: "☀️" },
-                        { day: "Thu", temp: `${selectedRandom.t-2}/${selectedRandom.t+2}°C`, desc: "Light Rain", icon: "🌧️" },
-                        { day: "Fri", temp: `${selectedRandom.t}/${selectedRandom.t+4}°C`, desc: "Mostly Sunny", icon: "🌤️" },
-                        { day: "Sat", temp: `${selectedRandom.t+1}/${selectedRandom.t+5}°C`, desc: "Sunny", icon: "☀️" },
-                        { day: "Sun", temp: `${selectedRandom.t-1}/${selectedRandom.t+3}°C`, desc: "Overcast", icon: "☁️" }
-                    ]
-                };
-
-                renderWeatherSection(cityName);
-                showToast("Simulated live climate conditions for " + cityName);
-            }
+        function handleSubscribe(tierName) {
+            triggerNotification(`Redirecting to secure gateway for: [${tierName}]...`);
         }
 
-        // ======================= Helper Utilities =======================
-        function formatDate(date) {
-            const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-            const m = months[date.getMonth()];
-            const d = String(date.getDate()).padStart(2, '0');
-            const y = date.getFullYear();
-            return `${m} ${d}, ${y}`;
-        }
-
-        function showToast(message, type = "success") {
-            const container = document.getElementById("toast-container");
-            const toast = document.createElement("div");
-            const bgClass = type === "warning" ? "bg-amber-500" : "bg-slate-950";
-            
-            toast.className = `${bgClass} text-white text-xs font-bold px-5 py-3.5 rounded-2xl shadow-2xl flex items-center space-x-2.5 mb-3 transition-all duration-300 opacity-0 transform translate-y-3 pointer-events-auto max-w-sm border border-white/5`;
-            toast.innerHTML = `
-                <span class="text-sm">${type === 'warning' ? '⚠️' : '✅'}</span>
-                <span>${message}</span>
-            `;
-
-            container.appendChild(toast);
-
-            setTimeout(() => {
-                toast.classList.remove("opacity-0", "translate-y-3");
-            }, 50);
-
-            setTimeout(() => {
-                toast.classList.add("opacity-0", "translate-y--3");
-                setTimeout(() => {
-                    toast.remove();
-                }, 300);
-            }, 3000);
-        }
+        renderMatrix();
     </script>
 </body>
 </html>
