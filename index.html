@@ -269,7 +269,7 @@
                                 <div class="flex flex-col items-center">
                                     <i data-lucide="file-up" class="text-ink-600 group-hover:text-sage-600 w-6 h-6 mb-1.5 transition-colors"></i>
                                     <span class="text-sm font-semibold text-ink-900">Choose PDF Document</span>
-                                    <span class="text-xs text-ink-600 mt-1">Maximum size 30MB</span>
+                                    <span class="text-xs text-ink-600 mt-1">Max 2 PDFs · 30MB each</span>
                                 </div>
                             </div>
 
@@ -538,6 +538,8 @@
     <script>
         lucide.createIcons();
 
+        const MAX_UPLOAD_FILES = 2; // Frontend API-cost cap: max 2 PDF uploads per session
+        let uploadedFileCount = 0;
         let currentSelectedPaper = "paper-1";
 
         function triggerNotification(message) {
@@ -653,6 +655,13 @@
             const file = event.target.files[0];
             if (!file) return;
 
+            // Enforce frontend upload cap (API cost constraint)
+            if (uploadedFileCount >= MAX_UPLOAD_FILES) {
+                event.target.value = "";
+                triggerNotification(`Upload limit reached: max ${MAX_UPLOAD_FILES} PDFs at a time.`);
+                return;
+            }
+
             const box = document.getElementById('loader-box');
             const title = document.getElementById('loader-title');
             const desc = document.getElementById('loader-desc');
@@ -690,6 +699,7 @@
                 };
 
                 mockPapers.push(customInjectedPaper);
+                uploadedFileCount += 1;
 
                 const listContainer = document.getElementById('paper-list-container');
                 const newButton = document.createElement('button');
@@ -704,7 +714,11 @@
 
                 selectPaper(newId);
                 renderMatrix();
-                triggerNotification("PDF parsed and extracted successfully!");
+                triggerNotification(
+                    uploadedFileCount >= MAX_UPLOAD_FILES
+                        ? `PDF extracted. Upload limit reached (${MAX_UPLOAD_FILES}/${MAX_UPLOAD_FILES}).`
+                        : `PDF parsed successfully (${uploadedFileCount}/${MAX_UPLOAD_FILES}).`
+                );
                 event.target.value = "";
             }, 2500);
         }
