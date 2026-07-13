@@ -8,6 +8,7 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600;6..72,700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -199,42 +200,8 @@
     </div>
 
     <script>
-        const mockPapers = [
-            {
-                id: "paper-1",
-                title: "The Impact of Large Language Models on Higher Education Assessment: Opportunities and Threats",
-                author: "Chen, L. & Wang, J.",
-                year: "2025",
-                questions: "To analyze how assessment structures must adapt to prevent AI plagiarism while harnessing human-AI collaborative workflows.",
-                methodology: "Mixed-Methods: Quantitative student surveys (n=420) coupled with 15 pedagogical expert interviews.",
-                findings: "Traditional open essays are highly vulnerable. Adding process-based defense checks boosts critical scoring indices by 14%.",
-                limitations: "Primarily confined to well-funded Tier-1 research institutions; excludes vocational or localized colleges.",
-                utility: "Use this to back up arguments on why traditional exams must shift towards continuous assessments.",
-                quotes: "“AI integration, rather than outright bans, optimizes continuous process-based student evaluations.”",
-                shortLabel: "Chen et al. (2025)",
-                shortDesc: "Impact of LLMs on Higher Ed Assessment",
-                matrixFocus: "Re-evaluating examination vulnerabilities in the LLM-dominated era.",
-                matrixMethod: "Mixed methods (Surveying n=420 professors, 15 qualitative academic experts).",
-                matrixFindings: "Standard essays fail; oral defenses or continuous grading raises student evaluation validity by 14%."
-            },
-            {
-                id: "paper-2",
-                title: "Evaluating RAG Performance in Academic Knowledge Extraction vs. Direct Large Language Model Prompting",
-                author: "Miller, T., Davis, R. & Park, S.",
-                year: "2026",
-                questions: "To benchmark fact-extraction precision and determine how Retrieval-Augmented Generation limits citation hallucination.",
-                methodology: "Experimental benchmarking testing 7 distinct LLMs across a verified corpus of 500 open-access peer papers.",
-                findings: "RAG raises citation extraction accuracy to 97.8%, while standard prompting yields up to 34% hallucination on long contexts.",
-                limitations: "Analyzed documents were cleanly structured digital PDFs; scanned layout variants were excluded.",
-                utility: "Ideal citation to justify using specialized database tools rather than querying generic AI assistants.",
-                quotes: "“Vector-constrained lookup is currently the premium defense against factual academic hallucinations.”",
-                shortLabel: "Miller et al. (2026)",
-                shortDesc: "Evaluating RAG Performance in Academic Knowledge",
-                matrixFocus: "Comparing fact-retrieval mechanisms and mitigation of AI hallucination thresholds.",
-                matrixMethod: "Quantitative test-bed (500 papers ran across 7 leading text-generation nodes).",
-                matrixFindings: "RAG configurations output 97.8% accurate lookups; plain text prompt generators create 34% fake citations."
-            }
-        ];
+        // Runtime paper store — filled by DeepSeek analysis (no hardcoded mock papers)
+        window.__scholarPapers = [];
     </script>
 
     <header class="sticky top-0 z-40 glass-bar border-b border-ink-900/10">
@@ -334,16 +301,9 @@
                             </h3>
 
                             <div class="space-y-2.5" id="paper-list-container">
-                                <button onclick="selectPaper('paper-1')" id="list-paper-1" class="w-full text-left p-3 rounded-md border paper-selected transition-all relative text-sm">
-                                    <div class="absolute top-3 right-3 w-1.5 h-1.5 bg-sage-500 rounded-full"></div>
-                                    <p class="font-bold text-ink-900 line-clamp-1">Chen et al. (2025)</p>
-                                    <p class="text-xs text-ink-600 mt-0.5 line-clamp-1">Impact of LLMs on Higher Ed Assessment</p>
-                                </button>
-
-                                <button onclick="selectPaper('paper-2')" id="list-paper-2" class="w-full text-left p-3 rounded-md border border-ink-900/10 bg-white hover:bg-sage-50/50 transition-all text-sm">
-                                    <p class="font-bold text-ink-800 line-clamp-1">Miller et al. (2026)</p>
-                                    <p class="text-xs text-ink-600 mt-0.5 line-clamp-1">Evaluating RAG Performance in Academic Knowledge</p>
-                                </button>
+                                <p id="paper-list-empty" class="text-xs text-ink-600 leading-relaxed py-2">
+                                    No papers analyzed yet. Upload a PDF to run DeepSeek V4 Flash extraction.
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -353,7 +313,7 @@
                         <div class="panel-rule bg-paper-50/90 border border-ink-900/10 rounded-lg p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
                             <div class="text-center sm:text-left">
                                 <span class="text-[10px] tracking-wider uppercase text-ink-600 font-bold">Current View</span>
-                                <h3 id="active-title-meta" class="text-sm font-bold text-ink-900 mt-0.5 line-clamp-1">Chen et al. (2025)</h3>
+                                <h3 id="active-title-meta" class="text-sm font-bold text-ink-900 mt-0.5 line-clamp-1">Awaiting upload</h3>
                             </div>
 
                             <div class="flex bg-ink-900/5 p-1 rounded-md text-xs sm:text-sm flex-wrap justify-center">
@@ -373,8 +333,8 @@
                         <div id="panel-summary" class="space-y-5 block">
                             <div class="bg-ink-900 text-paper-50 p-6 md:p-7 rounded-lg relative overflow-hidden">
                                 <div class="absolute left-0 top-0 bottom-0 w-1 bg-brass-500"></div>
-                                <h2 id="active-title" class="font-display text-xl sm:text-2xl font-semibold leading-snug pr-2">The Impact of Large Language Models on Higher Education Assessment: Opportunities and Threats</h2>
-                                <p id="active-meta" class="text-sm font-semibold text-brass-400 mt-2">Chen, L. & Wang, J. (2025)</p>
+                                <h2 id="active-title" class="font-display text-xl sm:text-2xl font-semibold leading-snug pr-2">Upload a PDF to analyze with DeepSeek V4 Flash</h2>
+                                <p id="active-meta" class="text-sm font-semibold text-brass-400 mt-2">No paper selected</p>
                             </div>
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -383,7 +343,7 @@
                                         <i data-lucide="help-circle" class="w-4 h-4 text-brass-600"></i>
                                         <span class="text-[10px] font-bold uppercase tracking-[0.14em]">Research Purpose</span>
                                     </div>
-                                    <p id="active-q" class="text-sm text-ink-800 leading-relaxed">To analyze how assessment structures must adapt to prevent AI plagiarism while harnessing human-AI collaborative workflows.</p>
+                                    <p id="active-q" class="text-sm text-ink-800 leading-relaxed">Extracted research questions will appear here after analysis.</p>
                                 </div>
 
                                 <div class="border-t-2 border-sage-500/70 pt-4">
@@ -391,7 +351,7 @@
                                         <i data-lucide="git-fork" class="w-4 h-4 text-sage-600"></i>
                                         <span class="text-[10px] font-bold uppercase tracking-[0.14em]">Methodology & Sample</span>
                                     </div>
-                                    <p id="active-method" class="text-sm text-ink-800 leading-relaxed">Mixed-Methods: Quantitative student surveys (n=420) coupled with 15 pedagogical expert interviews.</p>
+                                    <p id="active-method" class="text-sm text-ink-800 leading-relaxed">Methodology details will appear here after analysis.</p>
                                 </div>
 
                                 <div class="border-t-2 border-sage-500/70 pt-4">
@@ -399,7 +359,7 @@
                                         <i data-lucide="award" class="w-4 h-4 text-sage-600"></i>
                                         <span class="text-[10px] font-bold uppercase tracking-[0.14em]">Core Finding</span>
                                     </div>
-                                    <p id="active-findings" class="text-sm text-ink-800 leading-relaxed">Traditional open essays are highly vulnerable. Adding process-based defense checks boosts critical scoring indices by 14%.</p>
+                                    <p id="active-findings" class="text-sm text-ink-800 leading-relaxed">Key findings will appear here after analysis.</p>
                                 </div>
 
                                 <div class="border-t-2 border-ink-700/40 pt-4">
@@ -407,7 +367,7 @@
                                         <i data-lucide="alert-circle" class="w-4 h-4 text-ink-700"></i>
                                         <span class="text-[10px] font-bold uppercase tracking-[0.14em]">Limitation</span>
                                     </div>
-                                    <p id="active-limit" class="text-sm text-ink-800 leading-relaxed">Primarily confined to well-funded Tier-1 research institutions; excludes vocational or localized colleges.</p>
+                                    <p id="active-limit" class="text-sm text-ink-800 leading-relaxed">Limitations will appear here after analysis.</p>
                                 </div>
                             </div>
 
@@ -416,7 +376,7 @@
                                     <i data-lucide="message-square" class="w-5 h-5 text-brass-400 shrink-0"></i>
                                     <div>
                                         <h4 class="text-sm font-bold">How to cite this</h4>
-                                        <p id="active-utility" class="text-sm text-paper-100/75 mt-0.5">Use this to back up arguments on why traditional exams must shift towards continuous assessments.</p>
+                                        <p id="active-utility" class="text-sm text-paper-100/75 mt-0.5">Citation guidance will appear after a paper is analyzed.</p>
                                     </div>
                                 </div>
                                 <button onclick="copyCitationText()" class="shrink-0 bg-white/10 hover:bg-white/15 border border-white/15 text-paper-50 px-3 py-1.5 rounded-md text-sm font-semibold transition-all flex items-center gap-1.5">
@@ -584,11 +544,23 @@
     <script>
         lucide.createIcons();
 
+        // PDF.js worker
+        if (window.pdfjsLib) {
+            pdfjsLib.GlobalWorkerOptions.workerSrc =
+                "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+        }
+
         const MAX_UPLOAD_FILES = 2; // Frontend API-cost cap: max 2 PDF uploads per session
+        const MAX_FILE_BYTES = 30 * 1024 * 1024;
         const ACCESS_CODE = "PILOT2026";
         const ACCESS_STORAGE_KEY = "scholarpilot_access_granted";
+        const ANALYZE_ENDPOINT = "/api/analyze";
+
+        let papers = window.__scholarPapers || [];
+        let latestMatrix = null;
         let uploadedFileCount = 0;
-        let currentSelectedPaper = "paper-1";
+        let currentSelectedPaper = null;
+        let isAnalyzing = false;
 
         function hasAccess() {
             try {
@@ -641,7 +613,6 @@
                 error.classList.remove('flex');
                 closeAccessModal();
                 triggerNotification("Access granted. You can upload PDFs now.");
-                // Open file picker after unlock
                 document.getElementById('file-input').click();
                 return;
             }
@@ -656,6 +627,11 @@
         function onUploadAreaClick(event) {
             event.preventDefault();
             event.stopPropagation();
+
+            if (isAnalyzing) {
+                triggerNotification("Analysis already in progress. Please wait.");
+                return;
+            }
 
             if (!hasAccess()) {
                 openAccessModal();
@@ -691,6 +667,18 @@
                 toast.classList.remove('translate-y-0', 'opacity-100');
                 toast.classList.add('-translate-y-24', 'opacity-0');
             }, 2500);
+        }
+
+        function setLoader(visible, titleText, descText) {
+            const box = document.getElementById('loader-box');
+            if (!box) return;
+            if (visible) {
+                box.classList.remove('hidden');
+                if (titleText) document.getElementById('loader-title').innerText = titleText;
+                if (descText) document.getElementById('loader-desc').innerText = descText;
+            } else {
+                box.classList.add('hidden');
+            }
         }
 
         function setTabButtonState(activeBtn) {
@@ -731,27 +719,54 @@
             }
         }
 
+        function escapeHtml(value) {
+            return String(value || "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#39;");
+        }
+
+        function refreshPaperList() {
+            const listContainer = document.getElementById('paper-list-container');
+            const empty = document.getElementById('paper-list-empty');
+            if (!listContainer) return;
+
+            listContainer.querySelectorAll('button[data-paper-id]').forEach((btn) => btn.remove());
+
+            if (!papers.length) {
+                if (empty) empty.classList.remove('hidden');
+                return;
+            }
+
+            if (empty) empty.classList.add('hidden');
+
+            papers.forEach((paper) => {
+                const btn = document.createElement('button');
+                btn.type = "button";
+                btn.id = `list-${paper.id}`;
+                btn.dataset.paperId = paper.id;
+                btn.onclick = () => selectPaper(paper.id);
+                const selected = paper.id === currentSelectedPaper;
+                btn.className = selected
+                    ? "w-full text-left p-3 rounded-md border paper-selected transition-all relative text-sm"
+                    : "w-full text-left p-3 rounded-md border border-ink-900/10 bg-white hover:bg-sage-50/50 transition-all text-sm";
+                btn.innerHTML = `
+                    ${selected ? '<div class="absolute top-3 right-3 w-1.5 h-1.5 bg-sage-500 rounded-full"></div>' : ''}
+                    <p class="font-bold text-ink-900 line-clamp-1">${escapeHtml(paper.shortLabel || `${paper.author} (${paper.year})`)}</p>
+                    <p class="text-xs text-ink-600 mt-0.5 line-clamp-1">${escapeHtml(paper.shortDesc || paper.title)}</p>
+                `;
+                listContainer.appendChild(btn);
+            });
+        }
+
         function selectPaper(paperId) {
             currentSelectedPaper = paperId;
-            const paper = mockPapers.find(p => p.id === paperId);
+            const paper = papers.find(p => p.id === paperId);
             if (!paper) return;
 
-            mockPapers.forEach(p => {
-                const btn = document.getElementById(`list-${p.id}`);
-                if (!btn) return;
-                if (p.id === paperId) {
-                    btn.className = "w-full text-left p-3 rounded-md border paper-selected transition-all relative text-sm";
-                    if (!btn.querySelector('.bg-sage-500')) {
-                        const indicator = document.createElement('div');
-                        indicator.className = "absolute top-3 right-3 w-1.5 h-1.5 bg-sage-500 rounded-full";
-                        btn.appendChild(indicator);
-                    }
-                } else {
-                    btn.className = "w-full text-left p-3 rounded-md border border-ink-900/10 bg-white hover:bg-sage-50/50 transition-all text-sm";
-                    const indicator = btn.querySelector('.bg-sage-500');
-                    if (indicator) indicator.remove();
-                }
-            });
+            refreshPaperList();
 
             document.getElementById('active-title-meta').innerText = `${paper.author} (${paper.year})`;
             document.getElementById('active-title').innerText = paper.title;
@@ -766,7 +781,11 @@
         }
 
         function copyCitationText() {
-            const paper = mockPapers.find(p => p.id === currentSelectedPaper);
+            const paper = papers.find(p => p.id === currentSelectedPaper);
+            if (!paper) {
+                triggerNotification("Upload and analyze a paper first.");
+                return;
+            }
             const standardCitation = `${paper.author} (${paper.year}). ${paper.title}.`;
 
             if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -788,100 +807,152 @@
             triggerNotification(message);
         }
 
-        function handleFileUpload(event) {
+        async function extractPdfText(file) {
+            if (!window.pdfjsLib) {
+                throw new Error("PDF.js failed to load. Please refresh and try again.");
+            }
+
+            const buffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+            const pages = [];
+
+            for (let i = 1; i <= pdf.numPages; i += 1) {
+                const page = await pdf.getPage(i);
+                const content = await page.getTextContent();
+                const pageText = content.items.map((item) => item.str).join(" ");
+                pages.push(pageText);
+            }
+
+            return pages.join("\n\n").replace(/\s+/g, " ").trim();
+        }
+
+        async function analyzeWithDeepSeek(text, filename) {
+            const payload = {
+                text,
+                filename,
+                papers: papers.map((p) => ({
+                    title: p.title,
+                    author: p.author,
+                    year: p.year,
+                    questions: p.questions,
+                    methodology: p.methodology,
+                    findings: p.findings,
+                    limitations: p.limitations,
+                    matrixFocus: p.matrixFocus,
+                    matrixMethod: p.matrixMethod,
+                    matrixFindings: p.matrixFindings,
+                })),
+            };
+
+            const response = await fetch(ANALYZE_ENDPOINT, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            });
+
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                throw new Error(data.error || `Analysis failed (${response.status})`);
+            }
+            if (!data.paper) {
+                throw new Error("API returned no paper analysis.");
+            }
+            return data;
+        }
+
+        async function handleFileUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
 
-            // Require access code before any PDF processing
             if (!hasAccess()) {
                 event.target.value = "";
                 openAccessModal();
                 return;
             }
 
-            // Enforce frontend upload cap (API cost constraint)
             if (uploadedFileCount >= MAX_UPLOAD_FILES) {
                 event.target.value = "";
                 triggerNotification(`Upload limit reached: max ${MAX_UPLOAD_FILES} PDFs at a time.`);
                 return;
             }
 
-            const box = document.getElementById('loader-box');
-            const title = document.getElementById('loader-title');
-            const desc = document.getElementById('loader-desc');
+            if (file.type && file.type !== "application/pdf") {
+                event.target.value = "";
+                triggerNotification("Please upload a PDF file.");
+                return;
+            }
 
-            box.classList.remove('hidden');
-            title.innerText = "Extracting details...";
-            desc.innerText = `Ingesting ${file.name.substring(0, 15)}...`;
+            if (file.size > MAX_FILE_BYTES) {
+                event.target.value = "";
+                triggerNotification("File exceeds the 30MB limit.");
+                return;
+            }
 
-            setTimeout(() => {
-                title.innerText = "Structuring metrics...";
-                desc.innerText = "Locating Method, Sample & Hypothesis...";
-            }, 1000);
+            isAnalyzing = true;
+            setLoader(true, "Extracting PDF text...", `Reading ${file.name.substring(0, 28)}...`);
 
-            setTimeout(() => {
-                box.classList.add('hidden');
+            try {
+                const text = await extractPdfText(file);
+                if (!text || text.length < 40) {
+                    throw new Error("Could not extract readable text. Scanned/image-only PDFs are not supported yet.");
+                }
 
-                const newId = "paper-" + (mockPapers.length + 1);
-                const fileCleanName = file.name.replace(/\.[^/.]+$/, "");
+                setLoader(true, "DeepSeek V4 Flash analyzing...", "Extracting purpose, methods, findings...");
+                const result = await analyzeWithDeepSeek(text, file.name);
 
-                const customInjectedPaper = {
+                const newId = "paper-" + (papers.length + 1);
+                const analyzed = {
                     id: newId,
-                    title: fileCleanName,
-                    author: "Uploaded Reference",
-                    year: "2026",
-                    questions: "To analyze continuous workflows and find scalable parameters within target literature contexts.",
-                    methodology: "Literature review coupled with analytical benchmarking and automatic parsing metrics.",
-                    findings: "Implementing high-fidelity automated extraction structures reduces academic reading loops by up to 80%.",
-                    limitations: "System parsing is subject to the digital resolution quality of the uploaded document.",
-                    utility: "Use this to reinforce methodology arguments favoring algorithmic data parsing platforms.",
-                    shortLabel: fileCleanName,
-                    shortDesc: "Uploaded PDF Document",
-                    matrixFocus: "Automated extraction of continuous research workflows from uploaded literature.",
-                    matrixMethod: "Literature review with analytical benchmarking and parsing metrics.",
-                    matrixFindings: "High-fidelity automated extraction reduces academic reading loops by up to 80%."
+                    ...result.paper,
+                    shortLabel: `${(result.paper.author || "Unknown").split(",")[0]} (${result.paper.year || "n.d."})`,
+                    shortDesc: result.paper.title,
                 };
 
-                mockPapers.push(customInjectedPaper);
+                papers.push(analyzed);
+                window.__scholarPapers = papers;
                 uploadedFileCount += 1;
-
-                const listContainer = document.getElementById('paper-list-container');
-                const newButton = document.createElement('button');
-                newButton.id = `list-${newId}`;
-                newButton.onclick = () => selectPaper(newId);
-                newButton.className = "w-full text-left p-3 rounded-md border border-ink-900/10 bg-white hover:bg-sage-50/50 transition-all text-sm";
-                newButton.innerHTML = `
-                    <p class="font-bold text-ink-800 line-clamp-1">${fileCleanName}</p>
-                    <p class="text-xs text-ink-600 mt-0.5 line-clamp-1">Uploaded PDF Document</p>
-                `;
-                listContainer.appendChild(newButton);
+                latestMatrix = result.matrix || null;
 
                 selectPaper(newId);
                 renderMatrix();
+                switchTab('tab-matrix');
+
                 triggerNotification(
                     uploadedFileCount >= MAX_UPLOAD_FILES
-                        ? `PDF extracted. Upload limit reached (${MAX_UPLOAD_FILES}/${MAX_UPLOAD_FILES}).`
-                        : `PDF parsed successfully (${uploadedFileCount}/${MAX_UPLOAD_FILES}).`
+                        ? `Analyzed with DeepSeek. Upload limit reached (${MAX_UPLOAD_FILES}/${MAX_UPLOAD_FILES}).`
+                        : `Analyzed with DeepSeek (${uploadedFileCount}/${MAX_UPLOAD_FILES}).`
                 );
+            } catch (err) {
+                console.error(err);
+                triggerNotification(err.message || "Analysis failed. Please try again.");
+            } finally {
+                isAnalyzing = false;
+                setLoader(false);
                 event.target.value = "";
-            }, 2500);
+            }
         }
 
         function generateDraftParagraph(mode) {
-            const paper = mockPapers.find(p => p.id === currentSelectedPaper);
+            const paper = papers.find(p => p.id === currentSelectedPaper);
             const outputBox = document.getElementById('draft-output-text');
+            if (!paper) {
+                outputBox.innerText = "Upload and analyze at least one PDF before generating a synthesis draft.";
+                triggerNotification("No analyzed paper selected yet.");
+                return;
+            }
+
             let resultText = "";
 
             if (mode === 'method') {
-                resultText = `Examining the methodological frameworks, ${paper.author} (${paper.year}) utilizes a specialized design focused on ${paper.methodology.toLowerCase()} This is a reliable approach compared to classic configurations.`;
+                resultText = `Examining the methodological frameworks, ${paper.author} (${paper.year}) utilizes a specialized design focused on ${String(paper.methodology || "").toLowerCase()} This is a reliable approach compared to classic configurations.`;
             } else if (mode === 'finding') {
-                resultText = `In terms of research outcomes, the investigation conducted by ${paper.author} (${paper.year}) reveals that ${paper.findings.toLowerCase()} These insights provide pivotal empirical support when defining the parameters of our system scope.`;
+                resultText = `In terms of research outcomes, the investigation conducted by ${paper.author} (${paper.year}) reveals that ${String(paper.findings || "").toLowerCase()} These insights provide pivotal empirical support when defining the parameters of our system scope.`;
             } else if (mode === 'limit') {
-                resultText = `Nevertheless, certain limitations must be noted. As specified by ${paper.author} (${paper.year}), a key constraint involves the fact that ${paper.limitations.toLowerCase()} This creates an academic knowledge gap that our study directly addresses.`;
+                resultText = `Nevertheless, certain limitations must be noted. As specified by ${paper.author} (${paper.year}), a key constraint involves the fact that ${String(paper.limitations || "").toLowerCase()} This creates an academic knowledge gap that our study directly addresses.`;
             }
 
             outputBox.innerText = resultText;
-            triggerNotification("AI synthesis drafted! Review the text box.");
+            triggerNotification("Synthesis drafted from DeepSeek analysis.");
         }
 
         function copyDraftText() {
@@ -899,28 +970,61 @@
             const body = document.getElementById('matrix-body');
             if (!body) return;
 
-            const papers = mockPapers.slice(0, 3);
+            if (!papers.length) {
+                body.innerHTML = `
+                    <div class="p-6 text-sm text-ink-600">
+                        Upload up to ${MAX_UPLOAD_FILES} PDFs to build a live comparison matrix from DeepSeek analysis.
+                    </div>
+                `;
+                return;
+            }
+
+            // Prefer matrix payload returned by DeepSeek API; fall back to paper fields
             const rows = [
-                { label: "Research Focus", key: "matrixFocus" },
-                { label: "Methods & Cohort", key: "matrixMethod" },
-                { label: "Main Insights", key: "matrixFindings" }
+                {
+                    label: "Research Focus",
+                    cells: (latestMatrix && latestMatrix.researchFocus) ||
+                        papers.map((p) => ({
+                            label: `${(p.author || "Unknown").split(",")[0]} (${p.year || "n.d."})`,
+                            value: p.matrixFocus || p.questions || "",
+                        })),
+                },
+                {
+                    label: "Methods & Cohort",
+                    cells: (latestMatrix && latestMatrix.methods) ||
+                        papers.map((p) => ({
+                            label: `${(p.author || "Unknown").split(",")[0]} (${p.year || "n.d."})`,
+                            value: p.matrixMethod || p.methodology || "",
+                        })),
+                },
+                {
+                    label: "Main Insights",
+                    cells: (latestMatrix && latestMatrix.insights) ||
+                        papers.map((p) => ({
+                            label: `${(p.author || "Unknown").split(",")[0]} (${p.year || "n.d."})`,
+                            value: p.matrixFindings || p.findings || "",
+                        })),
+                },
             ];
 
-            const colClass = papers.length >= 3
+            const colCount = Math.max(1, (rows[0].cells || []).length);
+            const colClass = colCount >= 3
                 ? "grid grid-cols-1 md:grid-cols-4 p-4 gap-3 text-sm"
-                : "grid grid-cols-1 md:grid-cols-3 p-4 gap-3 text-sm";
+                : colCount === 2
+                    ? "grid grid-cols-1 md:grid-cols-3 p-4 gap-3 text-sm"
+                    : "grid grid-cols-1 md:grid-cols-2 p-4 gap-3 text-sm";
 
-            body.innerHTML = rows.map(row => {
-                const cells = papers.map(p => `
+            body.innerHTML = rows.map((row) => {
+                const cells = (row.cells || []).map((cell) => `
                     <div class="p-3 bg-white rounded-md border border-ink-900/10">
-                        <p class="font-semibold text-ink-900 mb-1">${p.author.split(',')[0]} (${p.year}):</p>
-                        <p class="text-ink-700">${p[row.key] || p.questions}</p>
+                        <p class="font-semibold text-ink-900 mb-1">${escapeHtml(cell.label)}:</p>
+                        <p class="text-ink-700">${escapeHtml(cell.value)}</p>
                     </div>
                 `).join("");
 
                 return `
                     <div class="${colClass}">
-                        <div class="font-bold text-ink-600 uppercase tracking-[0.12em] text-[10px] flex items-center">${row.label}</div>
+                        <div class="font-bold text-ink-600 uppercase tracking-[0.12em] text-[10px] flex items-center">${escapeHtml(row.label)}</div>
                         ${cells}
                     </div>
                 `;
@@ -928,9 +1032,14 @@
         }
 
         function downloadCSV() {
+            if (!papers.length) {
+                triggerNotification("No analyzed papers to export yet.");
+                return;
+            }
+
             triggerNotification("Creating comparative matrix CSV...");
             const header = ["Paper Title", "Author", "Year", "Purpose", "Methodology", "Key Finding"];
-            const dataRows = [header, ...mockPapers.map(p => [
+            const dataRows = [header, ...papers.map(p => [
                 p.title,
                 p.author,
                 p.year,
@@ -958,6 +1067,7 @@
             triggerNotification(`Redirecting to secure gateway for: [${tierName}]...`);
         }
 
+        refreshPaperList();
         renderMatrix();
     </script>
 </body>
