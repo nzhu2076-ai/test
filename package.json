@@ -1,0 +1,9 @@
+{
+  "name": "scholarpilot",
+  "private": true,
+  "version": "1.0.0",
+  "description": "ScholarPilot literature review workspace with DeepSeek V4 Flash analysis",
+  "engines": {
+    "node": ">=18"
+  }
+}
