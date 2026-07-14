@@ -153,52 +153,6 @@
         </div>
     </div>
 
-    <!-- Private Beta Access Code Modal -->
-    <div id="access-modal" class="fixed inset-0 z-[60] hidden items-center justify-center p-4" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="access-modal-title">
-        <div class="absolute inset-0 bg-ink-950/55 backdrop-blur-sm" onclick="closeAccessModal()"></div>
-        <div class="relative w-full max-w-md bg-paper-50 border border-ink-900/10 rounded-xl shadow-soft overflow-hidden animate-rise">
-            <div class="h-1 bg-gradient-to-r from-sage-600 via-brass-500 to-sage-500"></div>
-            <div class="p-6 sm:p-7">
-                <div class="flex items-start gap-3 mb-4">
-                    <div class="w-10 h-10 rounded-lg bg-ink-900 text-paper-50 flex items-center justify-center shrink-0">
-                        <i data-lucide="shield-keyhole" class="w-5 h-5"></i>
-                    </div>
-                    <div>
-                        <p class="text-[10px] font-bold uppercase tracking-[0.16em] text-sage-600 mb-1">Private Beta</p>
-                        <h2 id="access-modal-title" class="font-display text-xl font-semibold text-ink-900 leading-snug">
-                            ScholarPilot is currently in Private Beta. Please enter your Access Code to proceed.
-                        </h2>
-                    </div>
-                </div>
-
-                <label for="access-code-input" class="block text-xs font-bold uppercase tracking-[0.12em] text-ink-600 mb-2">Access Code</label>
-                <input
-                    id="access-code-input"
-                    type="text"
-                    autocomplete="off"
-                    spellcheck="false"
-                    placeholder="Enter your invite code"
-                    class="w-full bg-white border border-ink-900/15 focus:border-sage-500 focus:ring-2 focus:ring-sage-500/20 rounded-lg px-3.5 py-2.5 text-sm font-semibold text-ink-900 outline-none transition-all"
-                    onkeydown="if (event.key === 'Enter') submitAccessCode()"
-                >
-
-                <p id="access-code-error" class="hidden mt-2 text-sm font-medium text-rose-600 items-center gap-1.5">
-                    <i data-lucide="alert-circle" class="w-3.5 h-3.5 shrink-0"></i>
-                    <span>Incorrect access code. Please try again.</span>
-                </p>
-
-                <div class="mt-5 flex flex-col-reverse sm:flex-row gap-2 sm:justify-end">
-                    <button type="button" onclick="closeAccessModal()" class="px-4 py-2.5 rounded-md text-sm font-semibold text-ink-700 hover:bg-ink-900/5 transition-all">
-                        Cancel
-                    </button>
-                    <button type="button" onclick="submitAccessCode()" class="px-4 py-2.5 rounded-md text-sm font-semibold bg-ink-900 hover:bg-ink-800 text-paper-50 transition-all">
-                        Unlock Upload
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <script>
         // Runtime paper store — filled by DeepSeek analysis (no hardcoded mock papers)
         window.__scholarPapers = [];
@@ -282,7 +236,7 @@
                                 <div class="flex flex-col items-center">
                                     <i data-lucide="file-up" class="text-ink-600 group-hover:text-sage-600 w-6 h-6 mb-1.5 transition-colors"></i>
                                     <span class="text-sm font-semibold text-ink-900">Choose PDF Document</span>
-                                    <span class="text-xs text-ink-600 mt-1">Max 2 PDFs · 30MB each · Access code required</span>
+                                    <span class="text-xs text-ink-600 mt-1">Max 2 free PDFs · 30MB each</span>
                                 </div>
                             </div>
 
@@ -552,8 +506,6 @@
 
         const MAX_UPLOAD_FILES = 2; // Frontend API-cost cap: max 2 PDF uploads per session
         const MAX_FILE_BYTES = 30 * 1024 * 1024;
-        const ACCESS_CODE = "PILOT2026";
-        const ACCESS_STORAGE_KEY = "scholarpilot_access_granted";
         const ANALYZE_ENDPOINT = "/api/analyze";
 
         let papers = window.__scholarPapers || [];
@@ -561,68 +513,6 @@
         let uploadedFileCount = 0;
         let currentSelectedPaper = null;
         let isAnalyzing = false;
-
-        function hasAccess() {
-            try {
-                return localStorage.getItem(ACCESS_STORAGE_KEY) === "true";
-            } catch (e) {
-                return false;
-            }
-        }
-
-        function grantAccess() {
-            try {
-                localStorage.setItem(ACCESS_STORAGE_KEY, "true");
-            } catch (e) {
-                // localStorage unavailable — still allow session use after correct code
-            }
-        }
-
-        function openAccessModal() {
-            const modal = document.getElementById('access-modal');
-            const input = document.getElementById('access-code-input');
-            const error = document.getElementById('access-code-error');
-            error.classList.add('hidden');
-            error.classList.remove('flex');
-            input.value = "";
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            modal.setAttribute('aria-hidden', 'false');
-            lucide.createIcons();
-            setTimeout(() => input.focus(), 50);
-        }
-
-        function closeAccessModal() {
-            const modal = document.getElementById('access-modal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-            modal.setAttribute('aria-hidden', 'true');
-            const error = document.getElementById('access-code-error');
-            error.classList.add('hidden');
-            error.classList.remove('flex');
-        }
-
-        function submitAccessCode() {
-            const input = document.getElementById('access-code-input');
-            const error = document.getElementById('access-code-error');
-            const entered = (input.value || "").trim();
-
-            if (entered === ACCESS_CODE) {
-                grantAccess();
-                error.classList.add('hidden');
-                error.classList.remove('flex');
-                closeAccessModal();
-                triggerNotification("Access granted. You can upload PDFs now.");
-                document.getElementById('file-input').click();
-                return;
-            }
-
-            error.classList.remove('hidden');
-            error.classList.add('flex');
-            input.focus();
-            input.select();
-            lucide.createIcons();
-        }
 
         function onUploadAreaClick(event) {
             event.preventDefault();
@@ -633,11 +523,6 @@
                 return;
             }
 
-            if (!hasAccess()) {
-                openAccessModal();
-                return;
-            }
-
             if (uploadedFileCount >= MAX_UPLOAD_FILES) {
                 triggerNotification(`Upload limit reached: max ${MAX_UPLOAD_FILES} PDFs at a time.`);
                 return;
@@ -645,15 +530,6 @@
 
             document.getElementById('file-input').click();
         }
-
-        document.addEventListener('keydown', (event) => {
-            if (event.key === 'Escape') {
-                const modal = document.getElementById('access-modal');
-                if (modal && !modal.classList.contains('hidden')) {
-                    closeAccessModal();
-                }
-            }
-        });
 
         function triggerNotification(message) {
             const toast = document.getElementById('toast');
@@ -863,12 +739,6 @@
         async function handleFileUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
-
-            if (!hasAccess()) {
-                event.target.value = "";
-                openAccessModal();
-                return;
-            }
 
             if (uploadedFileCount >= MAX_UPLOAD_FILES) {
                 event.target.value = "";
