@@ -231,9 +231,16 @@
                                 <i data-lucide="upload" class="w-3.5 h-3.5 text-sage-600"></i> Step 1: Upload PDFs
                             </h3>
 
-                            <div id="upload-dropzone" class="relative border border-dashed border-ink-900/20 hover:border-sage-500 rounded-md p-5 text-center cursor-pointer transition-all bg-white/70 hover:bg-sage-50/60 group" onclick="onUploadAreaClick(event)">
-                                <input type="file" id="file-input" class="absolute inset-0 opacity-0 cursor-pointer pointer-events-none" accept=".pdf" onchange="handleFileUpload(event)" tabindex="-1">
-                                <div class="flex flex-col items-center">
+                            <div id="upload-dropzone" class="relative border border-dashed border-ink-900/20 hover:border-sage-500 rounded-md p-5 text-center cursor-pointer transition-all bg-white/70 hover:bg-sage-50/60 group">
+                                <input
+                                    type="file"
+                                    id="file-input"
+                                    class="absolute inset-0 z-10 w-full h-full opacity-0 cursor-pointer"
+                                    accept=".pdf,application/pdf"
+                                    onchange="handleFileUpload(event)"
+                                    onclick="return guardUploadClick(event)"
+                                >
+                                <div class="relative z-0 flex flex-col items-center pointer-events-none">
                                     <i data-lucide="file-up" class="text-ink-600 group-hover:text-sage-600 w-6 h-6 mb-1.5 transition-colors"></i>
                                     <span class="text-sm font-semibold text-ink-900">Choose PDF Document</span>
                                     <span class="text-xs text-ink-600 mt-1">Max 2 free PDFs · 30MB each</span>
@@ -514,21 +521,21 @@
         let currentSelectedPaper = null;
         let isAnalyzing = false;
 
-        function onUploadAreaClick(event) {
-            event.preventDefault();
-            event.stopPropagation();
-
+        // Guard only — file input itself opens the picker (no programmatic click / unlock gates)
+        function guardUploadClick(event) {
             if (isAnalyzing) {
+                event.preventDefault();
                 triggerNotification("Analysis already in progress. Please wait.");
-                return;
+                return false;
             }
 
             if (uploadedFileCount >= MAX_UPLOAD_FILES) {
+                event.preventDefault();
                 triggerNotification(`Upload limit reached: max ${MAX_UPLOAD_FILES} PDFs at a time.`);
-                return;
+                return false;
             }
 
-            document.getElementById('file-input').click();
+            return true;
         }
 
         function triggerNotification(message) {
