@@ -153,6 +153,26 @@
         </div>
     </div>
 
+    <!-- Clerk Billing Pricing Table Modal -->
+    <div id="pricing-modal" class="fixed inset-0 z-[70] hidden items-center justify-center p-4" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="pricing-modal-title">
+        <div class="absolute inset-0 bg-ink-950/60 backdrop-blur-sm" onclick="closePricingModal()"></div>
+        <div class="relative w-full max-w-5xl max-h-[90vh] overflow-y-auto bg-paper-50 border border-ink-900/10 rounded-xl shadow-soft">
+            <div class="sticky top-0 z-10 flex items-center justify-between gap-3 px-5 py-4 border-b border-ink-900/10 bg-paper-50/95 backdrop-blur">
+                <div>
+                    <p class="text-[10px] font-bold uppercase tracking-[0.16em] text-sage-600">Clerk Billing</p>
+                    <h2 id="pricing-modal-title" class="font-display text-xl font-semibold text-ink-900">Choose a ScholarPilot plan</h2>
+                </div>
+                <button type="button" onclick="closePricingModal()" class="px-3 py-1.5 rounded-md text-sm font-semibold text-ink-700 hover:bg-ink-900/5 transition-all" aria-label="Close pricing">
+                    Close
+                </button>
+            </div>
+            <div class="p-4 sm:p-6">
+                <div id="clerk-pricing-table-root" class="min-h-[320px]"></div>
+                <p class="mt-4 text-xs text-ink-600 text-center">Secure checkout powered by Clerk Billing (Stripe). Use Clerk’s development gateway test cards in development mode.</p>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Runtime paper store — filled by DeepSeek analysis (no hardcoded mock papers)
         window.__scholarPapers = [];
@@ -461,18 +481,18 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12 text-left">
                     <div class="border border-ink-900/10 p-6 rounded-lg bg-white flex flex-col justify-between">
                         <div>
-                            <h3 class="font-bold text-ink-600 text-xs uppercase tracking-[0.14em]">Starter</h3>
-                            <p class="text-sm text-ink-600 mt-1">Test the pipeline workflow</p>
+                            <h3 class="font-bold text-ink-600 text-xs uppercase tracking-[0.14em]">Free</h3>
+                            <p class="text-sm text-ink-600 mt-1">Default starter tier</p>
                             <div class="my-5 flex items-baseline gap-1">
                                 <span class="font-display text-4xl font-semibold text-ink-900">$0</span>
-                                <span class="text-xs text-ink-600">/ free trial</span>
+                                <span class="text-xs text-ink-600">/ free_user</span>
                             </div>
                             <ul class="space-y-2 text-sm text-ink-800 font-medium">
                                 <li class="flex items-center gap-1.5"><i data-lucide="check" class="text-sage-600 w-3.5 h-3.5"></i> Extract 2 paper PDFs</li>
                                 <li class="flex items-center gap-1.5"><i data-lucide="check" class="text-sage-600 w-3.5 h-3.5"></i> Custom interactive wizard</li>
                             </ul>
                         </div>
-                        <a href="#workspace" class="mt-6 w-full text-center bg-sage-50 hover:bg-sage-100 text-ink-800 py-2.5 rounded-md text-sm font-bold transition-all block border border-sage-200">Get Free Trial</a>
+                        <button type="button" onclick="openPricingTable('free_user')" class="mt-6 w-full text-center bg-sage-50 hover:bg-sage-100 text-ink-800 py-2.5 rounded-md text-sm font-bold transition-all border border-sage-200">Get Free Trial</button>
                     </div>
 
                     <div class="border-2 border-ink-900 p-6 rounded-lg bg-white flex flex-col justify-between relative shadow-soft">
@@ -482,15 +502,15 @@
                             <p class="text-sm text-ink-600 mt-1">For university term essays</p>
                             <div class="my-5 flex items-baseline gap-1">
                                 <span class="font-display text-4xl font-semibold text-ink-900">$19</span>
-                                <span class="text-xs text-ink-600">/ user license</span>
+                                <span class="text-xs text-ink-600">/ mo · researcher</span>
                             </div>
                             <ul class="space-y-2 text-sm text-ink-800 font-medium">
                                 <li class="flex items-center gap-1.5"><i data-lucide="check" class="text-sage-600 w-3.5 h-3.5"></i> Parse up to 40 PDFs</li>
                                 <li class="flex items-center gap-1.5"><i data-lucide="check" class="text-sage-600 w-3.5 h-3.5"></i> Export matrix comparisons (CSV)</li>
-                                <li class="flex items-center gap-1.5"><i data-lucide="check" class="text-sage-600 w-3.5 h-3.5"></i> Format automatic citations</li>
+                                <li class="flex items-center gap-1.5"><i data-lucide="check" class="text-sage-600 w-3.5 h-3.5"></i> Feature: parse_up_to_40_pdfs</li>
                             </ul>
                         </div>
-                        <button onclick="handleSubscribe('Researcher Plan')" class="mt-6 w-full text-center bg-ink-900 hover:bg-ink-800 text-paper-50 py-2.5 rounded-md text-sm font-bold transition-all">Buy Now</button>
+                        <button type="button" onclick="openPricingTable('researcher')" class="mt-6 w-full text-center bg-ink-900 hover:bg-ink-800 text-paper-50 py-2.5 rounded-md text-sm font-bold transition-all">Buy Now</button>
                     </div>
 
                     <div class="border border-ink-900/10 p-6 rounded-lg bg-sage-50/40 flex flex-col justify-between">
@@ -499,15 +519,30 @@
                             <p class="text-sm text-ink-600 mt-1">Full thesis review combo</p>
                             <div class="my-5 flex items-baseline gap-1">
                                 <span class="font-display text-4xl font-semibold text-ink-900">$149</span>
-                                <span class="text-xs text-ink-600">/ package</span>
+                                <span class="text-xs text-ink-600">/ mo · consultant_hybrid</span>
                             </div>
                             <ul class="space-y-2 text-sm text-ink-800 font-medium">
-                                <li class="flex items-center gap-1.5"><i data-lucide="check" class="text-sage-600 w-3.5 h-3.5"></i> Unlimited system PDF access</li>
+                                <li class="flex items-center gap-1.5"><i data-lucide="check" class="text-sage-600 w-3.5 h-3.5"></i> Unlimited PDF uploads</li>
+                                <li class="flex items-center gap-1.5"><i data-lucide="check" class="text-sage-600 w-3.5 h-3.5"></i> Feature: unlimited_uploads</li>
                                 <li class="flex items-center gap-1.5"><i data-lucide="check" class="text-sage-600 w-3.5 h-3.5"></i> <strong>2× 1-on-1 expert coaching calls</strong></li>
-                                <li class="flex items-center gap-1.5"><i data-lucide="check" class="text-sage-600 w-3.5 h-3.5"></i> Manual review & critique check</li>
                             </ul>
                         </div>
-                        <button onclick="handleSubscribe('Consultant Hybrid Package')" class="mt-6 w-full text-center bg-sage-700 hover:bg-sage-600 text-white py-2.5 rounded-md text-sm font-bold transition-all">Select Package</button>
+                        <button type="button" onclick="openPricingTable('consultant_hybrid')" class="mt-6 w-full text-center bg-sage-700 hover:bg-sage-600 text-white py-2.5 rounded-md text-sm font-bold transition-all">Select Package</button>
+                    </div>
+                </div>
+
+                <div class="mt-12 text-left">
+                    <div class="panel-rule bg-white border border-ink-900/10 rounded-lg p-4 sm:p-6">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+                            <div>
+                                <h3 class="font-display text-xl font-semibold text-ink-900">Subscribe with Clerk Billing</h3>
+                                <p class="text-sm text-ink-600 mt-1">Live plans from your Clerk dashboard — checkout via Stripe.</p>
+                            </div>
+                            <button type="button" onclick="openPricingTable()" class="shrink-0 bg-ink-900 hover:bg-ink-800 text-paper-50 px-4 py-2 rounded-md text-sm font-semibold transition-all">
+                                Open Pricing Table
+                            </button>
+                        </div>
+                        <div id="clerk-pricing-table-inline" class="min-h-[120px]"></div>
                     </div>
                 </div>
             </div>
@@ -562,7 +597,13 @@
                 "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
         }
 
-        const GUEST_MAX_UPLOAD_FILES = 2; // Guests: 2 free PDF trials
+        const GUEST_MAX_UPLOAD_FILES = 2; // free_user / guest default
+        const RESEARCHER_MAX_UPLOAD_FILES = 40; // parse_up_to_40_pdfs
+        const FEATURE_UNLIMITED = "unlimited_uploads";
+        const FEATURE_PARSE_40 = "parse_up_to_40_pdfs";
+        const PLAN_FREE = "free_user";
+        const PLAN_RESEARCHER = "researcher";
+        const PLAN_CONSULTANT = "consultant_hybrid";
         const MAX_FILE_BYTES = 30 * 1024 * 1024;
         const ANALYZE_ENDPOINT = "/api/analyze";
         const CLERK_CONFIG_ENDPOINT = "/api/clerk-config";
@@ -583,6 +624,9 @@
         let isAnalyzing = false;
         let clerkReady = false;
         let clerkConfigured = false;
+        let pricingTableMounted = false;
+        let inlinePricingMounted = false;
+        let pendingOpenPricing = null;
 
         function isSignedIn() {
             try {
@@ -592,13 +636,81 @@
             }
         }
 
+        function checkClerkAccess(params) {
+            try {
+                if (!window.Clerk || !Clerk.session) return false;
+                if (typeof Clerk.session.checkAuthorization === "function") {
+                    return Boolean(Clerk.session.checkAuthorization(params));
+                }
+                if (typeof Clerk.has === "function") {
+                    return Boolean(Clerk.has(params));
+                }
+            } catch (e) {
+                console.warn("Clerk access check failed:", e);
+            }
+            return false;
+        }
+
+        function hasFeature(featureKey) {
+            return checkClerkAccess({ feature: featureKey });
+        }
+
+        function hasPlan(planKey) {
+            return checkClerkAccess({ plan: planKey });
+        }
+
+        function getPlanInfo() {
+            if (!isSignedIn()) {
+                return {
+                    key: "guest",
+                    max: GUEST_MAX_UPLOAD_FILES,
+                    label: "Guest",
+                    showUpgrade: true,
+                };
+            }
+
+            // Prefer feature entitlements from Clerk Billing
+            if (hasFeature(FEATURE_UNLIMITED) || hasPlan(PLAN_CONSULTANT)) {
+                return {
+                    key: PLAN_CONSULTANT,
+                    max: Number.POSITIVE_INFINITY,
+                    label: "Consultant Hybrid",
+                    showUpgrade: false,
+                };
+            }
+
+            if (hasFeature(FEATURE_PARSE_40) || hasPlan(PLAN_RESEARCHER)) {
+                return {
+                    key: PLAN_RESEARCHER,
+                    max: RESEARCHER_MAX_UPLOAD_FILES,
+                    label: "Researcher",
+                    showUpgrade: true,
+                };
+            }
+
+            // Signed-in default = free_user
+            return {
+                key: PLAN_FREE,
+                max: GUEST_MAX_UPLOAD_FILES,
+                label: "Free",
+                showUpgrade: true,
+            };
+        }
+
         function getMaxUploads() {
-            // Logged-in users currently have unlimited uploads (paid tier later)
-            return isSignedIn() ? Number.POSITIVE_INFINITY : GUEST_MAX_UPLOAD_FILES;
+            return getPlanInfo().max;
+        }
+
+        function formatUploadQuota(plan) {
+            if (!Number.isFinite(plan.max)) {
+                return "Unlimited uploads · 30MB each";
+            }
+            return `Max ${plan.max} PDFs · 30MB each · ${plan.label} plan`;
         }
 
         function updateAuthUI() {
             const signedIn = isSignedIn();
+            const plan = getPlanInfo();
             const signInBtn = document.getElementById('sign-in-btn');
             const userSession = document.getElementById('user-session');
             const guestHint = document.getElementById('guest-feature-hint');
@@ -627,15 +739,122 @@
                 }
                 label.textContent = email;
 
-                if (guestHint) guestHint.classList.add('hidden');
-                if (limitHint) limitHint.textContent = "Unlimited uploads · 30MB each";
+                if (limitHint) limitHint.textContent = formatUploadQuota(plan);
+
+                if (guestHint) {
+                    if (plan.showUpgrade) {
+                        guestHint.classList.remove('hidden');
+                        if (plan.key === PLAN_RESEARCHER) {
+                            guestHint.innerHTML = `Researcher plan: up to ${RESEARCHER_MAX_UPLOAD_FILES} PDFs. <button type="button" onclick="openPricingTable('consultant_hybrid')" class="underline font-semibold text-sage-700">Upgrade for unlimited</button>.`;
+                        } else {
+                            guestHint.innerHTML = `Free plan: ${GUEST_MAX_UPLOAD_FILES} PDFs. <button type="button" onclick="openPricingTable('researcher')" class="underline font-semibold text-sage-700">Upgrade plans</button>.`;
+                        }
+                    } else {
+                        guestHint.classList.add('hidden');
+                    }
+                }
             } else {
                 signInBtn.classList.remove('hidden');
                 userSession.classList.add('hidden');
                 userSession.classList.remove('flex');
-                if (guestHint) guestHint.classList.remove('hidden');
                 if (limitHint) limitHint.textContent = "Max 2 free PDFs · 30MB each";
+                if (guestHint) {
+                    guestHint.classList.remove('hidden');
+                    guestHint.textContent = "Logged in users can unlock more features.";
+                }
             }
+        }
+
+        function mountPricingTableInto(targetEl, highlightedPlan) {
+            if (!targetEl || !window.Clerk || typeof Clerk.mountPricingTable !== "function") {
+                return false;
+            }
+
+            targetEl.innerHTML = "";
+            const props = {
+                for: "user",
+                appearance: {
+                    variables: {
+                        colorPrimary: "#3d6349",
+                        colorText: "#0c2428",
+                        borderRadius: "0.5rem",
+                    },
+                },
+            };
+            if (highlightedPlan) {
+                props.highlightedPlan = highlightedPlan;
+            }
+
+            Clerk.mountPricingTable(targetEl, props);
+            return true;
+        }
+
+        function ensureInlinePricingTable() {
+            if (!clerkReady || !isSignedIn()) return;
+            const inlineRoot = document.getElementById('clerk-pricing-table-inline');
+            if (!inlineRoot) return;
+            if (mountPricingTableInto(inlineRoot)) {
+                inlinePricingMounted = true;
+            }
+        }
+
+        function openPricingModal(highlightedPlan) {
+            const modal = document.getElementById('pricing-modal');
+            const root = document.getElementById('clerk-pricing-table-root');
+            if (!modal || !root) return;
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            modal.setAttribute('aria-hidden', 'false');
+
+            const ok = mountPricingTableInto(root, highlightedPlan || undefined);
+            pricingTableMounted = ok;
+            if (!ok) {
+                root.innerHTML = `<p class="text-sm text-ink-700">Unable to load Clerk Pricing Table. Confirm Billing is enabled and you are signed in.</p>`;
+            }
+        }
+
+        function closePricingModal() {
+            const modal = document.getElementById('pricing-modal');
+            const root = document.getElementById('clerk-pricing-table-root');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                modal.setAttribute('aria-hidden', 'true');
+            }
+            if (root && window.Clerk && typeof Clerk.unmountPricingTable === "function" && pricingTableMounted) {
+                try { Clerk.unmountPricingTable(root); } catch (e) { /* ignore */ }
+                pricingTableMounted = false;
+                root.innerHTML = "";
+            }
+            updateAuthUI();
+        }
+
+        async function openPricingTable(highlightedPlan) {
+            if (!clerkConfigured) {
+                triggerNotification("Clerk Billing is not configured. Set CLERK_PUBLISHABLE_KEY in Vercel.");
+                return;
+            }
+
+            if (!clerkReady) {
+                triggerNotification("Authentication is still loading. Please try again.");
+                return;
+            }
+
+            if (!isSignedIn()) {
+                pendingOpenPricing = highlightedPlan || true;
+                triggerNotification("Sign in to view plans and checkout.");
+                await handleSignInClick();
+                return;
+            }
+
+            openPricingModal(typeof highlightedPlan === "string" ? highlightedPlan : undefined);
+        }
+
+        function promptUpgradeForLimit(plan) {
+            const maxLabel = Number.isFinite(plan.max) ? String(plan.max) : "your";
+            triggerNotification(`Upload limit reached (${maxLabel}). Opening upgrade plans…`);
+            openPricingTable(plan.key === PLAN_RESEARCHER ? PLAN_CONSULTANT : PLAN_RESEARCHER);
         }
 
         function decodeFrontendApi(publishableKey) {
@@ -689,10 +908,19 @@
                 clerkReady = true;
 
                 updateAuthUI();
+                ensureInlinePricingTable();
 
                 if (typeof Clerk.addListener === "function") {
-                    Clerk.addListener(({ user }) => {
+                    Clerk.addListener(() => {
                         updateAuthUI();
+                        if (isSignedIn()) {
+                            ensureInlinePricingTable();
+                            if (pendingOpenPricing != null) {
+                                const plan = pendingOpenPricing;
+                                pendingOpenPricing = null;
+                                openPricingModal(typeof plan === "string" ? plan : undefined);
+                            }
+                        }
                     });
                 }
             } catch (err) {
@@ -743,14 +971,10 @@
                 return false;
             }
 
-            const maxUploads = getMaxUploads();
-            if (uploadedFileCount >= maxUploads) {
+            const plan = getPlanInfo();
+            if (uploadedFileCount >= plan.max) {
                 event.preventDefault();
-                triggerNotification(
-                    isSignedIn()
-                        ? "Upload limit reached."
-                        : `Guest limit reached: max ${GUEST_MAX_UPLOAD_FILES} PDFs. Sign in for unlimited uploads.`
-                );
+                promptUpgradeForLimit(plan);
                 return false;
             }
 
@@ -970,11 +1194,7 @@
 
             if (uploadedFileCount >= getMaxUploads()) {
                 event.target.value = "";
-                triggerNotification(
-                    isSignedIn()
-                        ? "Upload limit reached."
-                        : `Guest limit reached: max ${GUEST_MAX_UPLOAD_FILES} PDFs. Sign in for unlimited uploads.`
-                );
+                promptUpgradeForLimit(getPlanInfo());
                 return;
             }
 
@@ -1019,13 +1239,14 @@
                 renderMatrix();
                 switchTab('tab-matrix');
 
-                triggerNotification(
-                    !isSignedIn() && uploadedFileCount >= GUEST_MAX_UPLOAD_FILES
-                        ? `Analyzed with DeepSeek. Guest limit reached (${GUEST_MAX_UPLOAD_FILES}/${GUEST_MAX_UPLOAD_FILES}). Sign in for more.`
-                        : isSignedIn()
-                            ? `Analyzed with DeepSeek (${uploadedFileCount} uploaded).`
-                            : `Analyzed with DeepSeek (${uploadedFileCount}/${GUEST_MAX_UPLOAD_FILES}).`
-                );
+                const plan = getPlanInfo();
+                const quota = Number.isFinite(plan.max) ? `${uploadedFileCount}/${plan.max}` : `${uploadedFileCount} uploaded`;
+                if (uploadedFileCount >= plan.max) {
+                    triggerNotification(`Analyzed with DeepSeek. ${plan.label} limit reached (${quota}).`);
+                    setTimeout(() => promptUpgradeForLimit(plan), 600);
+                } else {
+                    triggerNotification(`Analyzed with DeepSeek (${quota} · ${plan.label}).`);
+                }
             } catch (err) {
                 console.error(err);
                 triggerNotification(err.message || "Analysis failed. Please try again.");
@@ -1082,7 +1303,7 @@
                 body.innerHTML = `
                     <div class="p-6 text-sm text-ink-600">
                         Upload PDFs to build a live 7-dimension comparison matrix from DeepSeek analysis.
-                        Guests can analyze up to ${GUEST_MAX_UPLOAD_FILES} free PDFs.
+                        Free: 2 · Researcher: 40 · Consultant: unlimited.
                     </div>
                 `;
                 return;
@@ -1173,8 +1394,23 @@
         }
 
         function handleSubscribe(tierName) {
-            triggerNotification(`Redirecting to secure gateway for: [${tierName}]...`);
+            // Back-compat alias — all subscribe CTAs open Clerk Pricing Table
+            const map = {
+                "Researcher Plan": PLAN_RESEARCHER,
+                "Consultant Hybrid Package": PLAN_CONSULTANT,
+                "Free Trial": PLAN_FREE,
+            };
+            openPricingTable(map[tierName] || undefined);
         }
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                const modal = document.getElementById('pricing-modal');
+                if (modal && !modal.classList.contains('hidden')) {
+                    closePricingModal();
+                }
+            }
+        });
 
         refreshPaperList();
         renderMatrix();
