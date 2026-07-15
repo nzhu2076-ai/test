@@ -298,46 +298,70 @@
                                 <p id="active-meta" class="text-sm font-semibold text-brass-400 mt-2">No paper selected</p>
                             </div>
 
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                <div class="border-t-2 border-brass-500/70 pt-4">
+                            <div class="space-y-3" id="dimension-cards">
+                                <article class="bg-paper-50/90 border border-ink-900/10 rounded-lg p-4 sm:p-5">
                                     <div class="flex items-center gap-2 mb-2 text-ink-600">
-                                        <i data-lucide="help-circle" class="w-4 h-4 text-brass-600"></i>
-                                        <span class="text-[10px] font-bold uppercase tracking-[0.14em]">Research Purpose</span>
+                                        <i data-lucide="target" class="w-4 h-4 text-brass-600"></i>
+                                        <span class="text-[10px] font-bold uppercase tracking-[0.14em]">1. Research Purpose / Focus</span>
                                     </div>
-                                    <p id="active-q" class="text-sm text-ink-800 leading-relaxed">Extracted research questions will appear here after analysis.</p>
-                                </div>
+                                    <p id="active-purpose" class="text-sm text-ink-800 leading-relaxed">Extracted research purpose will appear here after analysis.</p>
+                                </article>
 
-                                <div class="border-t-2 border-sage-500/70 pt-4">
+                                <article class="bg-paper-50/90 border border-ink-900/10 rounded-lg p-4 sm:p-5">
                                     <div class="flex items-center gap-2 mb-2 text-ink-600">
                                         <i data-lucide="git-fork" class="w-4 h-4 text-sage-600"></i>
-                                        <span class="text-[10px] font-bold uppercase tracking-[0.14em]">Methodology & Sample</span>
+                                        <span class="text-[10px] font-bold uppercase tracking-[0.14em]">2. Methodology & Sample</span>
                                     </div>
                                     <p id="active-method" class="text-sm text-ink-800 leading-relaxed">Methodology details will appear here after analysis.</p>
-                                </div>
+                                </article>
 
-                                <div class="border-t-2 border-sage-500/70 pt-4">
+                                <article class="bg-paper-50/90 border border-ink-900/10 rounded-lg p-4 sm:p-5">
                                     <div class="flex items-center gap-2 mb-2 text-ink-600">
                                         <i data-lucide="award" class="w-4 h-4 text-sage-600"></i>
-                                        <span class="text-[10px] font-bold uppercase tracking-[0.14em]">Core Finding</span>
+                                        <span class="text-[10px] font-bold uppercase tracking-[0.14em]">3. Core Findings / Insights</span>
                                     </div>
                                     <p id="active-findings" class="text-sm text-ink-800 leading-relaxed">Key findings will appear here after analysis.</p>
-                                </div>
+                                </article>
 
-                                <div class="border-t-2 border-ink-700/40 pt-4">
+                                <article class="bg-paper-50/90 border border-ink-900/10 rounded-lg p-4 sm:p-5">
                                     <div class="flex items-center gap-2 mb-2 text-ink-600">
                                         <i data-lucide="alert-circle" class="w-4 h-4 text-ink-700"></i>
-                                        <span class="text-[10px] font-bold uppercase tracking-[0.14em]">Limitation</span>
+                                        <span class="text-[10px] font-bold uppercase tracking-[0.14em]">4. Limitations</span>
                                     </div>
                                     <p id="active-limit" class="text-sm text-ink-800 leading-relaxed">Limitations will appear here after analysis.</p>
-                                </div>
+                                </article>
+
+                                <article class="bg-paper-50/90 border border-ink-900/10 rounded-lg p-4 sm:p-5">
+                                    <div class="flex items-center gap-2 mb-2 text-ink-600">
+                                        <i data-lucide="git-compare" class="w-4 h-4 text-brass-600"></i>
+                                        <span class="text-[10px] font-bold uppercase tracking-[0.14em]">5. Cross-Reference / Divergence</span>
+                                    </div>
+                                    <p id="active-cross" class="text-sm text-ink-800 leading-relaxed">Agreement/disagreement with other papers will appear here.</p>
+                                </article>
+
+                                <article class="bg-paper-50/90 border border-ink-900/10 rounded-lg p-4 sm:p-5">
+                                    <div class="flex items-center gap-2 mb-2 text-ink-600">
+                                        <i data-lucide="scan-search" class="w-4 h-4 text-sage-600"></i>
+                                        <span class="text-[10px] font-bold uppercase tracking-[0.14em]">6. Research Gap Addressed</span>
+                                    </div>
+                                    <p id="active-gap" class="text-sm text-ink-800 leading-relaxed">The research gap this paper addresses will appear here.</p>
+                                </article>
+
+                                <article class="bg-paper-50/90 border border-ink-900/10 rounded-lg p-4 sm:p-5">
+                                    <div class="flex items-center gap-2 mb-2 text-ink-600">
+                                        <i data-lucide="compass" class="w-4 h-4 text-brass-600"></i>
+                                        <span class="text-[10px] font-bold uppercase tracking-[0.14em]">7. Suggested Future Directions</span>
+                                    </div>
+                                    <p id="active-future" class="text-sm text-ink-800 leading-relaxed">Suggested future directions will appear here after analysis.</p>
+                                </article>
                             </div>
 
                             <div class="bg-ink-900 text-paper-50 p-5 rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                                 <div class="flex gap-3">
-                                    <i data-lucide="message-square" class="w-5 h-5 text-brass-400 shrink-0"></i>
+                                    <i data-lucide="quote" class="w-5 h-5 text-brass-400 shrink-0"></i>
                                     <div>
-                                        <h4 class="text-sm font-bold">How to cite this</h4>
-                                        <p id="active-utility" class="text-sm text-paper-100/75 mt-0.5">Citation guidance will appear after a paper is analyzed.</p>
+                                        <h4 class="text-sm font-bold">Citation</h4>
+                                        <p class="text-sm text-paper-100/75 mt-0.5">Copy a quick citation for the selected paper.</p>
                                     </div>
                                 </div>
                                 <button onclick="copyCitationText()" class="shrink-0 bg-white/10 hover:bg-white/15 border border-white/15 text-paper-50 px-3 py-1.5 rounded-md text-sm font-semibold transition-all flex items-center gap-1.5">
@@ -352,14 +376,14 @@
                                 <div class="p-5 border-b border-ink-900/10 flex items-center justify-between gap-3 flex-wrap">
                                     <div>
                                         <h3 class="font-display font-semibold text-ink-900 text-lg">Comparative Overview</h3>
-                                        <p class="text-sm text-ink-600 mt-0.5">Study differences in a linear, scannable layout.</p>
+                                        <p class="text-sm text-ink-600 mt-0.5">Seven dimensions as rows · papers as columns · scroll horizontally.</p>
                                     </div>
                                     <button onclick="downloadCSV()" class="bg-sage-600 hover:bg-sage-700 text-white px-3 py-1.5 rounded-md text-sm font-bold transition-all flex items-center gap-1">
                                         <i data-lucide="download" class="w-3.5 h-3.5"></i> Export CSV
                                     </button>
                                 </div>
 
-                                <div id="matrix-body" class="divide-y divide-ink-900/10">
+                                <div id="matrix-body" class="overflow-x-auto">
                                     <!-- filled by JS -->
                                 </div>
                             </div>
@@ -514,6 +538,15 @@
         const MAX_UPLOAD_FILES = 2; // Frontend API-cost cap: max 2 PDF uploads per session
         const MAX_FILE_BYTES = 30 * 1024 * 1024;
         const ANALYZE_ENDPOINT = "/api/analyze";
+        const DIMENSIONS = [
+            { key: "researchPurpose", label: "Research Purpose / Focus" },
+            { key: "methodology", label: "Methodology & Sample" },
+            { key: "findings", label: "Core Findings / Insights" },
+            { key: "limitations", label: "Limitations" },
+            { key: "crossReference", label: "Cross-Reference / Divergence" },
+            { key: "researchGap", label: "Research Gap Addressed" },
+            { key: "futureDirections", label: "Suggested Future Directions" },
+        ];
 
         let papers = window.__scholarPapers || [];
         let latestMatrix = null;
@@ -654,11 +687,13 @@
             document.getElementById('active-title-meta').innerText = `${paper.author} (${paper.year})`;
             document.getElementById('active-title').innerText = paper.title;
             document.getElementById('active-meta').innerText = `${paper.author} (${paper.year})`;
-            document.getElementById('active-q').innerText = paper.questions;
-            document.getElementById('active-method').innerText = paper.methodology;
-            document.getElementById('active-findings').innerText = paper.findings;
-            document.getElementById('active-limit').innerText = paper.limitations;
-            document.getElementById('active-utility').innerText = paper.utility;
+            document.getElementById('active-purpose').innerText = paper.researchPurpose || paper.questions || "";
+            document.getElementById('active-method').innerText = paper.methodology || "";
+            document.getElementById('active-findings').innerText = paper.findings || "";
+            document.getElementById('active-limit').innerText = paper.limitations || "";
+            document.getElementById('active-cross').innerText = paper.crossReference || "";
+            document.getElementById('active-gap').innerText = paper.researchGap || "";
+            document.getElementById('active-future').innerText = paper.futureDirections || "";
 
             triggerNotification(`Selected context switched to: ${paper.author}`);
         }
@@ -717,13 +752,13 @@
                     title: p.title,
                     author: p.author,
                     year: p.year,
-                    questions: p.questions,
-                    methodology: p.methodology,
-                    findings: p.findings,
-                    limitations: p.limitations,
-                    matrixFocus: p.matrixFocus,
-                    matrixMethod: p.matrixMethod,
-                    matrixFindings: p.matrixFindings,
+                    researchPurpose: p.researchPurpose || p.questions || "",
+                    methodology: p.methodology || "",
+                    findings: p.findings || "",
+                    limitations: p.limitations || "",
+                    crossReference: p.crossReference || "",
+                    researchGap: p.researchGap || "",
+                    futureDirections: p.futureDirections || "",
                 })),
             };
 
@@ -825,7 +860,7 @@
             } else if (mode === 'finding') {
                 resultText = `In terms of research outcomes, the investigation conducted by ${paper.author} (${paper.year}) reveals that ${String(paper.findings || "").toLowerCase()} These insights provide pivotal empirical support when defining the parameters of our system scope.`;
             } else if (mode === 'limit') {
-                resultText = `Nevertheless, certain limitations must be noted. As specified by ${paper.author} (${paper.year}), a key constraint involves the fact that ${String(paper.limitations || "").toLowerCase()} This creates an academic knowledge gap that our study directly addresses.`;
+                resultText = `Nevertheless, certain limitations must be noted. As specified by ${paper.author} (${paper.year}), a key constraint involves the fact that ${String(paper.limitations || "").toLowerCase()} The paper addresses the gap that ${String(paper.researchGap || "").toLowerCase()} Suggested future directions include ${String(paper.futureDirections || "").toLowerCase()}`;
             }
 
             outputBox.innerText = resultText;
@@ -843,6 +878,10 @@
             }
         }
 
+        function paperColumnLabel(p) {
+            return `${(p.author || "Unknown").split(",")[0]} (${p.year || "n.d."})`;
+        }
+
         function renderMatrix() {
             const body = document.getElementById('matrix-body');
             if (!body) return;
@@ -850,62 +889,53 @@
             if (!papers.length) {
                 body.innerHTML = `
                     <div class="p-6 text-sm text-ink-600">
-                        Upload up to ${MAX_UPLOAD_FILES} PDFs to build a live comparison matrix from DeepSeek analysis.
+                        Upload up to ${MAX_UPLOAD_FILES} PDFs to build a live 7-dimension comparison matrix from DeepSeek analysis.
                     </div>
                 `;
                 return;
             }
 
-            // Prefer matrix payload returned by DeepSeek API; fall back to paper fields
-            const rows = [
-                {
-                    label: "Research Focus",
-                    cells: (latestMatrix && latestMatrix.researchFocus) ||
-                        papers.map((p) => ({
-                            label: `${(p.author || "Unknown").split(",")[0]} (${p.year || "n.d."})`,
-                            value: p.matrixFocus || p.questions || "",
-                        })),
-                },
-                {
-                    label: "Methods & Cohort",
-                    cells: (latestMatrix && latestMatrix.methods) ||
-                        papers.map((p) => ({
-                            label: `${(p.author || "Unknown").split(",")[0]} (${p.year || "n.d."})`,
-                            value: p.matrixMethod || p.methodology || "",
-                        })),
-                },
-                {
-                    label: "Main Insights",
-                    cells: (latestMatrix && latestMatrix.insights) ||
-                        papers.map((p) => ({
-                            label: `${(p.author || "Unknown").split(",")[0]} (${p.year || "n.d."})`,
-                            value: p.matrixFindings || p.findings || "",
-                        })),
-                },
-            ];
+            const headerCells = papers.map((p) => `
+                <th class="min-w-[220px] max-w-[280px] px-4 py-3 text-left align-bottom border-b border-ink-900/10 bg-sage-50/60">
+                    <p class="text-xs font-bold text-ink-900">${escapeHtml(paperColumnLabel(p))}</p>
+                    <p class="text-[11px] text-ink-600 mt-1 line-clamp-2 font-medium">${escapeHtml(p.title || "")}</p>
+                </th>
+            `).join("");
 
-            const colCount = Math.max(1, (rows[0].cells || []).length);
-            const colClass = colCount >= 3
-                ? "grid grid-cols-1 md:grid-cols-4 p-4 gap-3 text-sm"
-                : colCount === 2
-                    ? "grid grid-cols-1 md:grid-cols-3 p-4 gap-3 text-sm"
-                    : "grid grid-cols-1 md:grid-cols-2 p-4 gap-3 text-sm";
-
-            body.innerHTML = rows.map((row) => {
-                const cells = (row.cells || []).map((cell) => `
-                    <div class="p-3 bg-white rounded-md border border-ink-900/10">
-                        <p class="font-semibold text-ink-900 mb-1">${escapeHtml(cell.label)}:</p>
-                        <p class="text-ink-700">${escapeHtml(cell.value)}</p>
-                    </div>
-                `).join("");
+            const rowsHtml = DIMENSIONS.map((dim) => {
+                const apiRow = latestMatrix && latestMatrix.rows && latestMatrix.rows[dim.key];
+                const cells = papers.map((p, idx) => {
+                    const value = (apiRow && apiRow.cells && apiRow.cells[idx] && apiRow.cells[idx].value) ||
+                        p[dim.key] ||
+                        "";
+                    return `<td class="min-w-[220px] max-w-[280px] px-4 py-3 align-top border-b border-ink-900/10 text-sm text-ink-700 leading-relaxed">${escapeHtml(value)}</td>`;
+                }).join("");
 
                 return `
-                    <div class="${colClass}">
-                        <div class="font-bold text-ink-600 uppercase tracking-[0.12em] text-[10px] flex items-center">${escapeHtml(row.label)}</div>
+                    <tr class="hover:bg-white/70">
+                        <th class="sticky left-0 z-10 min-w-[180px] max-w-[200px] px-4 py-3 text-left align-top border-b border-r border-ink-900/10 bg-paper-50 text-[10px] font-bold uppercase tracking-[0.12em] text-ink-600">
+                            ${escapeHtml(dim.label)}
+                        </th>
                         ${cells}
-                    </div>
+                    </tr>
                 `;
             }).join("");
+
+            body.innerHTML = `
+                <table class="min-w-full border-collapse text-sm">
+                    <thead>
+                        <tr>
+                            <th class="sticky left-0 z-20 min-w-[180px] max-w-[200px] px-4 py-3 text-left border-b border-r border-ink-900/10 bg-paper-50 text-[10px] font-bold uppercase tracking-[0.12em] text-ink-600">
+                                Dimension
+                            </th>
+                            ${headerCells}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rowsHtml}
+                    </tbody>
+                </table>
+            `;
         }
 
         function downloadCSV() {
@@ -915,14 +945,17 @@
             }
 
             triggerNotification("Creating comparative matrix CSV...");
-            const header = ["Paper Title", "Author", "Year", "Purpose", "Methodology", "Key Finding"];
-            const dataRows = [header, ...papers.map(p => [
+            const header = [
+                "Paper Title",
+                "Author",
+                "Year",
+                ...DIMENSIONS.map((d) => d.label),
+            ];
+            const dataRows = [header, ...papers.map((p) => [
                 p.title,
                 p.author,
                 p.year,
-                p.questions,
-                p.methodology,
-                p.findings
+                ...DIMENSIONS.map((d) => p[d.key] || ""),
             ])];
 
             const content = "\uFEFF" + dataRows.map(row =>

@@ -10,6 +10,18 @@ const DEEPSEEK_URL = "https://api.deepseek.com/chat/completions";
 const MODEL = "deepseek-v4-flash";
 const MAX_TEXT_CHARS = 60000;
 
+const DIMENSIONS = [
+  { key: "researchPurpose", label: "Research Purpose / Focus" },
+  { key: "methodology", label: "Methodology & Sample" },
+  { key: "findings", label: "Core Findings / Insights" },
+  { key: "limitations", label: "Limitations" },
+  { key: "crossReference", label: "Cross-Reference / Divergence" },
+  { key: "researchGap", label: "Research Gap Addressed" },
+  { key: "futureDirections", label: "Suggested Future Directions" },
+];
+
+const UNSTATED = "Not clearly stated in the provided text.";
+
 function setCors(res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
@@ -38,6 +50,15 @@ function extractJson(raw) {
   }
 }
 
+function pickField(paper, keys) {
+  for (const key of keys) {
+    if (paper[key] != null && String(paper[key]).trim()) {
+      return String(paper[key]).trim();
+    }
+  }
+  return UNSTATED;
+}
+
 function normalizePaper(parsed, filename) {
   const fallbackTitle = (filename || "Untitled Paper").replace(/\.[^/.]+$/, "");
   const paper = parsed.paper || parsed;
@@ -46,33 +67,46 @@ function normalizePaper(parsed, filename) {
     title: String(paper.title || fallbackTitle).trim(),
     author: String(paper.author || "Unknown Author").trim(),
     year: String(paper.year || "n.d.").trim(),
-    questions: String(paper.questions || paper.researchPurpose || "Not clearly stated in the provided text.").trim(),
-    methodology: String(paper.methodology || "Not clearly stated in the provided text.").trim(),
-    findings: String(paper.findings || "Not clearly stated in the provided text.").trim(),
-    limitations: String(paper.limitations || "Not clearly stated in the provided text.").trim(),
-    utility: String(paper.utility || "Use this paper to support related literature-review arguments.").trim(),
-    quotes: String(paper.quotes || "").trim(),
-    matrixFocus: String(paper.matrixFocus || paper.questions || "").trim(),
-    matrixMethod: String(paper.matrixMethod || paper.methodology || "").trim(),
-    matrixFindings: String(paper.matrixFindings || paper.findings || "").trim(),
+    researchPurpose: pickField(paper, ["researchPurpose", "questions", "researchFocus", "purpose"]),
+    methodology: pickField(paper, ["methodology", "methods", "sample"]),
+    findings: pickField(paper, ["findings", "insights", "coreFindings"]),
+    limitations: pickField(paper, ["limitations", "limitation"]),
+    crossReference: pickField(paper, ["crossReference", "divergence", "comparison"]),
+    researchGap: pickField(paper, ["researchGap", "gap"]),
+    futureDirections: pickField(paper, ["futureDirections", "futureWork", "suggestedFutureDirections"]),
   };
 }
 
+function paperLabel(p) {
+  return `${(p.author || "Unknown").split(",")[0]} (${p.year || "n.d."})`;
+}
+
 function buildCompareMatrix(papers) {
-  return {
-    researchFocus: papers.map((p) => ({
-      label: `${(p.author || "Unknown").split(",")[0]} (${p.year || "n.d."})`,
-      value: p.matrixFocus || p.questions || "",
-    })),
-    methods: papers.map((p) => ({
-      label: `${(p.author || "Unknown").split(",")[0]} (${p.year || "n.d."})`,
-      value: p.matrixMethod || p.methodology || "",
-    })),
-    insights: papers.map((p) => ({
-      label: `${(p.author || "Unknown").split(",")[0]} (${p.year || "n.d."})`,
-      value: p.matrixFindings || p.findings || "",
-    })),
-  };
+  const matrix = { columns: papers.map((p) => paperLabel(p)), rows: {} };
+  for (const dim of DIMENSIONS) {
+    matrix.rows[dim.key] = {
+      label: dim.label,
+      cells: papers.map((p) => ({
+        label: paperLabel(p),
+        value: p[dim.key] || "",
+      })),
+    };
+  }
+  return matrix;
+}
+
+function summarizeExistingPapers(papers) {
+  if (!papers.length) return "None yet — this is the first paper in the matrix.";
+  return papers
+    .map((p, i) => {
+      return [
+        `Paper ${i + 1}: ${p.title || "Untitled"} — ${paperLabel(p)}`,
+        `  Purpose: ${p.researchPurpose || p.questions || UNSTATED}`,
+        `  Findings: ${p.findings || UNSTATED}`,
+        `  Gap: ${p.researchGap || UNSTATED}`,
+      ].join("\n");
+    })
+    .join("\n\n");
 }
 
 module.exports = async function handler(req, res) {
@@ -106,34 +140,56 @@ module.exports = async function handler(req, res) {
     }
 
     const truncated = text.slice(0, MAX_TEXT_CHARS);
+    const normalizedExisting = existingPapers.map((p) => ({
+      title: p.title,
+      author: p.author,
+      year: p.year,
+      researchPurpose: p.researchPurpose || p.questions || "",
+      methodology: p.methodology || "",
+      findings: p.findings || "",
+      limitations: p.limitations || "",
+      crossReference: p.crossReference || "",
+      researchGap: p.researchGap || "",
+      futureDirections: p.futureDirections || "",
+    }));
 
     const systemPrompt = [
       "You are ScholarPilot, an academic literature-review analyst.",
       "Extract structured findings ONLY from the provided paper text.",
       "Do not invent citations, statistics, or claims that are not supported by the text.",
       "If a field is unclear, say so briefly instead of hallucinating.",
+      "You MUST extract these exact 7 analysis dimensions:",
+      "1. Research Purpose / Focus",
+      "2. Methodology & Sample",
+      "3. Core Findings / Insights",
+      "4. Limitations",
+      "5. Cross-Reference / Divergence (How this paper agrees/disagrees with others in the matrix)",
+      "6. Research Gap Addressed",
+      "7. Suggested Future Directions",
       "Respond with a single JSON object (no markdown) using this exact shape:",
       "{",
       '  "paper": {',
       '    "title": string,',
       '    "author": string,',
       '    "year": string,',
-      '    "questions": string,',
+      '    "researchPurpose": string,',
       '    "methodology": string,',
       '    "findings": string,',
       '    "limitations": string,',
-      '    "utility": string,',
-      '    "quotes": string,',
-      '    "matrixFocus": string,',
-      '    "matrixMethod": string,',
-      '    "matrixFindings": string',
+      '    "crossReference": string,',
+      '    "researchGap": string,',
+      '    "futureDirections": string',
       "  }",
       "}",
+      "For crossReference: explicitly compare agreement/disagreement with previously analyzed papers when provided; if none exist, note that this is the first paper in the matrix.",
       "Keep each field concise (1–3 sentences).",
     ].join("\n");
 
     const userPrompt = [
       `Filename: ${filename}`,
+      "",
+      "Previously analyzed papers in the comparison matrix:",
+      summarizeExistingPapers(normalizedExisting),
       "",
       "Academic PDF text to analyze:",
       "-----",
@@ -166,7 +222,7 @@ module.exports = async function handler(req, res) {
         deepseekData?.error?.message ||
         deepseekData?.message ||
         `DeepSeek API error (${deepseekRes.status})`;
-      return res.status(deepseekRes.status === 401 ? 502 : 502).json({
+      return res.status(502).json({
         error: message,
       });
     }
@@ -175,19 +231,7 @@ module.exports = async function handler(req, res) {
     const parsed = extractJson(content);
     const paper = normalizePaper(parsed, filename);
 
-    const allPapers = [...existingPapers.map((p) => ({
-      title: p.title,
-      author: p.author,
-      year: p.year,
-      questions: p.questions,
-      methodology: p.methodology,
-      findings: p.findings,
-      limitations: p.limitations,
-      matrixFocus: p.matrixFocus,
-      matrixMethod: p.matrixMethod,
-      matrixFindings: p.matrixFindings,
-    })), paper];
-
+    const allPapers = [...normalizedExisting, paper];
     const matrix = buildCompareMatrix(allPapers);
 
     return res.status(200).json({
@@ -195,6 +239,7 @@ module.exports = async function handler(req, res) {
       model: MODEL,
       paper,
       matrix,
+      dimensions: DIMENSIONS,
       paperCount: allPapers.length,
     });
   } catch (err) {
