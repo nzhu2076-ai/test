@@ -945,18 +945,24 @@
             }
 
             triggerNotification("Creating comparative matrix CSV...");
-            const header = [
-                "Paper Title",
-                "Author",
-                "Year",
-                ...DIMENSIONS.map((d) => d.label),
+
+            // Transposed matrix: Column A = row labels, Columns B+ = one paper each
+            const paperHeaders = papers.map((p) => paperColumnLabel(p));
+            const metaRows = [
+                { label: "Paper Title", values: papers.map((p) => p.title || "") },
+                { label: "Author", values: papers.map((p) => p.author || "") },
+                { label: "Year", values: papers.map((p) => p.year || "") },
             ];
-            const dataRows = [header, ...papers.map((p) => [
-                p.title,
-                p.author,
-                p.year,
-                ...DIMENSIONS.map((d) => p[d.key] || ""),
-            ])];
+            const dimensionRows = DIMENSIONS.map((d) => ({
+                label: d.label,
+                values: papers.map((p) => p[d.key] || ""),
+            }));
+
+            const dataRows = [
+                ["Dimension", ...paperHeaders],
+                ...metaRows.map((row) => [row.label, ...row.values]),
+                ...dimensionRows.map((row) => [row.label, ...row.values]),
+            ];
 
             const content = "\uFEFF" + dataRows.map(row =>
                 row.map(val => `"${String(val).replace(/"/g, '""')}"`).join(",")
