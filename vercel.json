@@ -2,6 +2,9 @@
   "functions": {
     "api/analyze.js": {
       "maxDuration": 60
+    },
+    "api/clerk-config.js": {
+      "maxDuration": 10
     }
   }
 }
