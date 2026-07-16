@@ -173,6 +173,20 @@
         </div>
     </div>
 
+    <!-- On-demand Clerk PricingTable host (no permanent test UI; overflow-visible so Stripe checkout drawer works) -->
+    <div id="clerk-billing-sheet" class="fixed inset-0 z-[80] hidden overflow-y-auto" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="clerk-billing-sheet-title">
+        <div class="min-h-full flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-ink-950/55" onclick="closeBillingSheet()"></div>
+            <div class="relative w-full max-w-4xl bg-paper-50 border border-ink-900/10 rounded-xl shadow-soft p-4 sm:p-6 overflow-visible">
+                <div class="flex items-center justify-between gap-3 mb-4">
+                    <h2 id="clerk-billing-sheet-title" class="font-display text-xl font-semibold text-ink-900">Choose a plan</h2>
+                    <button type="button" onclick="closeBillingSheet()" class="px-3 py-1.5 rounded-md text-sm font-semibold text-ink-700 hover:bg-ink-900/5 transition-all">Close</button>
+                </div>
+                <div id="clerk-pricing-table-inline" class="min-h-[120px] overflow-visible"></div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Runtime paper store — filled by DeepSeek analysis (no hardcoded mock papers)
         window.__scholarPapers = [];
@@ -541,24 +555,6 @@
                         <button type="button" onclick="openPricingTable('consultant_hybrid')" class="mt-6 w-full text-center bg-sage-700 hover:bg-sage-600 text-white py-2.5 rounded-md text-sm font-bold transition-all">Select Package</button>
                     </div>
                 </div>
-
-                <div class="mt-12 text-left">
-                    <div id="clerk-billing-panel" class="panel-rule bg-white border border-ink-900/10 rounded-lg p-4 sm:p-6 scroll-mt-24">
-                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-                            <div>
-                                <h3 class="font-display text-xl font-semibold text-ink-900">Subscribe with Clerk Billing</h3>
-                                <p class="text-sm text-ink-600 mt-1">Click <strong>Subscribe</strong> on a plan to open Clerk’s Stripe checkout drawer.</p>
-                            </div>
-                            <button type="button" onclick="openPricingTable()" class="shrink-0 bg-ink-900 hover:bg-ink-800 text-paper-50 px-4 py-2 rounded-md text-sm font-semibold transition-all">
-                                Refresh plans
-                            </button>
-                        </div>
-                        <div id="clerk-pricing-table-inline" class="min-h-[160px]"></div>
-                        <p class="mt-4 text-xs text-ink-600">
-                            After checkout, you’ll return here with <code class="bg-sage-50 px-1 rounded">?billing=success</code>. In development, use Clerk’s test card <code class="bg-sage-50 px-1 rounded">4242 4242 4242 4242</code>.
-                        </p>
-                    </div>
-                </div>
             </div>
         </section>
 
@@ -845,16 +841,33 @@
         }
 
         function ensureInlinePricingTable(highlightedPlan) {
-            if (!clerkReady || !isSignedIn()) {
-                const inlineRoot = document.getElementById('clerk-pricing-table-inline');
-                if (inlineRoot && !isSignedIn()) {
-                    inlineRoot.innerHTML = `<p class="text-sm text-ink-700">Sign in to view Clerk Billing plans and start Stripe checkout.</p>`;
-                }
-                return;
-            }
+            if (!clerkReady || !isSignedIn()) return;
             const inlineRoot = document.getElementById('clerk-pricing-table-inline');
             if (!inlineRoot) return;
             mountPricingTableInto(inlineRoot, highlightedPlan);
+        }
+
+        function openBillingSheet() {
+            const sheet = document.getElementById('clerk-billing-sheet');
+            if (!sheet) return;
+            sheet.classList.remove('hidden');
+            sheet.setAttribute('aria-hidden', 'false');
+        }
+
+        function closeBillingSheet() {
+            const sheet = document.getElementById('clerk-billing-sheet');
+            const inlineRoot = document.getElementById('clerk-pricing-table-inline');
+            if (sheet) {
+                sheet.classList.add('hidden');
+                sheet.setAttribute('aria-hidden', 'true');
+            }
+            if (inlineRoot && window.Clerk && typeof Clerk.unmountPricingTable === "function" && inlinePricingMounted) {
+                try { Clerk.unmountPricingTable(inlineRoot); } catch (e) { /* ignore */ }
+                inlinePricingMounted = false;
+                pricingTableMounted = false;
+                inlineRoot.innerHTML = "";
+            }
+            syncUploadLockState();
         }
 
         function openUpgradeModal(plan) {
@@ -904,12 +917,8 @@
                 return;
             }
 
-            // Mount on the page (not inside a modal) so Clerk's Stripe checkout drawer can open
+            openBillingSheet();
             ensureInlinePricingTable(typeof highlightedPlan === "string" ? highlightedPlan : undefined);
-            const panel = document.getElementById('clerk-billing-panel');
-            if (panel) {
-                panel.scrollIntoView({ behavior: "smooth", block: "start" });
-            }
             triggerNotification("Select a plan and click Subscribe to open Stripe checkout.");
         }
 
@@ -994,26 +1003,21 @@
                 clerkReady = true;
 
                 updateAuthUI();
-                ensureInlinePricingTable();
 
                 // Returned from Clerk Billing checkout
                 const params = new URLSearchParams(window.location.search);
                 if (params.get("billing") === "success") {
                     triggerNotification("Subscription updated. Your new plan limits are active.");
-                    ensureInlinePricingTable();
                     syncUploadLockState();
                 }
 
                 if (typeof Clerk.addListener === "function") {
                     Clerk.addListener(() => {
                         updateAuthUI();
-                        if (isSignedIn()) {
-                            ensureInlinePricingTable();
-                            if (pendingOpenPricing != null) {
-                                const plan = pendingOpenPricing;
-                                pendingOpenPricing = null;
-                                openPricingTable(typeof plan === "string" ? plan : undefined);
-                            }
+                        if (isSignedIn() && pendingOpenPricing != null) {
+                            const plan = pendingOpenPricing;
+                            pendingOpenPricing = null;
+                            openPricingTable(typeof plan === "string" ? plan : undefined);
                         }
                     });
                 }
@@ -1508,9 +1512,12 @@
 
         document.addEventListener('keydown', (event) => {
             if (event.key === 'Escape') {
-                const modal = document.getElementById('upgrade-modal');
-                if (modal && !modal.classList.contains('hidden')) {
+                const upgradeModal = document.getElementById('upgrade-modal');
+                const billingSheet = document.getElementById('clerk-billing-sheet');
+                if (upgradeModal && !upgradeModal.classList.contains('hidden')) {
                     closeUpgradeModal();
+                } else if (billingSheet && !billingSheet.classList.contains('hidden')) {
+                    closeBillingSheet();
                 }
             }
         });
