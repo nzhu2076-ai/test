@@ -856,10 +856,16 @@
             });
 
             if (!targetEl || !window.Clerk || typeof Clerk.mountPricingTable !== "function") {
+                const mountKeys = window.Clerk
+                    ? Object.keys(window.Clerk).filter((k) => /^mount/i.test(k))
+                    : [];
                 console.error("[PricingTable] cannot mount — missing target, Clerk, or mountPricingTable.", {
                     targetSnapshot: describePricingTarget(targetEl),
                     hasClerk: !!window.Clerk,
                     hasMount: !!(window.Clerk && typeof Clerk.mountPricingTable === "function"),
+                    clerkVersion: window.Clerk && (Clerk.version || (Clerk.sdkMetadata && Clerk.sdkMetadata.version)) || null,
+                    availableMountFns: mountKeys,
+                    hint: "There is no loadPricingTable API. Need clerk-js@5+/@6 with mountPricingTable. Waiting on isReady will not help if the method is missing.",
                 });
                 return false;
             }
@@ -1065,24 +1071,75 @@
             return decoded.split("$")[0];
         }
 
-        function loadClerkScript(publishableKey) {
+        // Pin majors: FAPI `@latest` currently resolves to clerk-js@4.x which has NO mountPricingTable.
+        // Official JS quickstart uses @clerk/ui@1 + @clerk/clerk-js@6.
+        const CLERK_JS_MAJOR = "6";
+        const CLERK_UI_MAJOR = "1";
+
+        function appendClerkScript(src, attrs = {}) {
             return new Promise((resolve, reject) => {
-                if (window.Clerk && typeof window.Clerk.load === "function") {
-                    resolve();
+                const existing = document.querySelector(`script[src="${src}"]`);
+                if (existing) {
+                    if (existing.dataset.loaded === "true") {
+                        resolve();
+                        return;
+                    }
+                    existing.addEventListener("load", () => resolve(), { once: true });
+                    existing.addEventListener("error", () => reject(new Error(`Failed to load script: ${src}`)), { once: true });
                     return;
                 }
 
-                const frontendApi = decodeFrontendApi(publishableKey);
                 const script = document.createElement("script");
                 script.async = true;
                 script.crossOrigin = "anonymous";
                 script.type = "text/javascript";
-                script.setAttribute("data-clerk-publishable-key", publishableKey);
-                script.src = `https://${frontendApi}/npm/@clerk/clerk-js@latest/dist/clerk.browser.js`;
-                script.onload = () => resolve();
-                script.onerror = () => reject(new Error("Failed to load Clerk SDK"));
+                Object.keys(attrs).forEach((key) => script.setAttribute(key, attrs[key]));
+                script.src = src;
+                script.onload = () => {
+                    script.dataset.loaded = "true";
+                    resolve();
+                };
+                script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
                 document.head.appendChild(script);
             });
+        }
+
+        async function loadClerkScript(publishableKey) {
+            const hasBillingMount =
+                window.Clerk &&
+                typeof window.Clerk.load === "function" &&
+                typeof window.Clerk.mountPricingTable === "function";
+
+            if (hasBillingMount) {
+                return;
+            }
+
+            const frontendApi = decodeFrontendApi(publishableKey);
+            const uiSrc = `https://${frontendApi}/npm/@clerk/ui@${CLERK_UI_MAJOR}/dist/ui.browser.js`;
+            const clerkSrc = `https://${frontendApi}/npm/@clerk/clerk-js@${CLERK_JS_MAJOR}/dist/clerk.browser.js`;
+
+            console.log("[Clerk] loading SDK scripts", {
+                frontendApi,
+                uiSrc,
+                clerkSrc,
+                note: "Do not use @latest — it may resolve to clerk-js@4 without Billing mounts",
+            });
+
+            // UI bundle first (provides window.__internal_ClerkUICtor), then clerk-js@6
+            await appendClerkScript(uiSrc);
+            await appendClerkScript(clerkSrc, {
+                "data-clerk-publishable-key": publishableKey,
+            });
+
+            if (!window.Clerk || typeof window.Clerk.load !== "function") {
+                throw new Error("Clerk SDK loaded but window.Clerk.load is unavailable");
+            }
+            if (typeof window.Clerk.mountPricingTable !== "function") {
+                const mountKeys = Object.keys(window.Clerk).filter((k) => /^mount/i.test(k));
+                throw new Error(
+                    `Clerk SDK loaded without mountPricingTable (version=${window.Clerk.version || "unknown"}; mounts=${mountKeys.join(", ") || "none"}). Hard-refresh to drop any cached clerk-js@4.`
+                );
+            }
         }
 
         async function initClerkAuth() {
@@ -1104,8 +1161,16 @@
                 const loadOptions = {};
                 if (window.__internal_ClerkUICtor) {
                     loadOptions.ui = { ClerkUI: window.__internal_ClerkUICtor };
+                } else {
+                    console.warn("[Clerk] __internal_ClerkUICtor missing after UI bundle load — PricingTable UI may fail");
                 }
                 await Clerk.load(loadOptions);
+                console.log("[Clerk] ready", {
+                    version: Clerk.version || null,
+                    sdkMetadata: Clerk.sdkMetadata || null,
+                    hasMountPricingTable: typeof Clerk.mountPricingTable === "function",
+                    hasUICtor: !!window.__internal_ClerkUICtor,
+                });
                 clerkReady = true;
 
                 updateAuthUI();
