@@ -829,22 +829,104 @@
             };
         }
 
-        function logPricingMountAftermath(targetEl, label) {
+        function getClerkBillingDiagnostics() {
+            const env = window.Clerk && Clerk.environment;
+            const billing = env && env.commerceSettings && env.commerceSettings.billing;
+            const userEnabled = !!(billing && billing.user && billing.user.enabled);
+            const orgEnabled = !!(billing && billing.organization && billing.organization.enabled);
+            // Mirrors clerk-js@6 internal gate:
+            // Q = (_, env) => !env?.commerceSettings.billing.user.enabled && !env?.commerceSettings.billing.organization.enabled
+            // In production, mountPricingTable silently returns when Q is true (no DOM, no throw).
+            const wouldSilentNoop = !userEnabled && !orgEnabled;
+            return {
+                hasEnvironment: !!env,
+                clerkVersion: window.Clerk && (Clerk.version || (Clerk.sdkMetadata && Clerk.sdkMetadata.version)) || null,
+                hasUICtor: !!window.__internal_ClerkUICtor,
+                userBillingEnabled: userEnabled,
+                orgBillingEnabled: orgEnabled,
+                hasPaidUserPlans: !!(billing && (billing.user && billing.user.hasPaidPlans || billing.has_paid_user_plans)),
+                stripePublishableKeyPresent: !!(billing && (billing.stripePublishableKey || billing.stripe_publishable_key)),
+                wouldSilentNoop,
+                billingSnapshot: billing || null,
+            };
+        }
+
+        function showPricingEmptyState(targetEl, diagnostics, plansInfo) {
+            if (!targetEl) return;
+            const accountPlansUrl = "https://accounts.scholarpilot.net/user";
+            const reason = diagnostics.wouldSilentNoop
+                ? "Clerk SDK thinks Billing is disabled on this browser session (<code>commerceSettings.billing.user.enabled === false</code> or environment missing). In production, <code>mountPricingTable</code> becomes a silent no-op."
+                : "Mount was called but Clerk did not inject PricingTable DOM nodes.";
+            targetEl.innerHTML = `
+                <div class="rounded-lg border border-ink-900/10 bg-paper-100 p-4 text-sm text-ink-800 space-y-3">
+                    <p class="font-semibold text-ink-900">Pricing table did not render</p>
+                    <p>${reason}</p>
+                    <p>Server-side plans may still exist. Try Account Portal billing, or share the <code>[PricingTable] billing diagnostics</code> console object.</p>
+                    <div class="flex flex-wrap gap-2">
+                        <a href="${accountPlansUrl}" target="_blank" rel="noopener noreferrer"
+                           class="inline-flex px-3 py-2 rounded-md text-sm font-semibold bg-ink-900 text-paper-50 hover:bg-ink-800">Open Account Portal</a>
+                    </div>
+                    <pre class="text-xs overflow-x-auto bg-white/70 border border-ink-900/10 rounded-md p-3">${JSON.stringify({
+                        wouldSilentNoop: diagnostics.wouldSilentNoop,
+                        userBillingEnabled: diagnostics.userBillingEnabled,
+                        orgBillingEnabled: diagnostics.orgBillingEnabled,
+                        hasEnvironment: diagnostics.hasEnvironment,
+                        hasUICtor: diagnostics.hasUICtor,
+                        clerkVersion: diagnostics.clerkVersion,
+                        plansInfo: plansInfo || null,
+                    }, null, 2)}</pre>
+                </div>
+            `;
+        }
+
+        async function fetchCommercePlansDiagnostics() {
+            try {
+                const frontendApi = decodeFrontendApi(
+                    (window.Clerk && Clerk.publishableKey) || ""
+                );
+                if (!frontendApi) return { ok: false, error: "missing frontendApi" };
+                const res = await fetch(
+                    `https://${frontendApi}/v1/commerce/plans?payer_type=user`,
+                    {
+                        credentials: "include",
+                        headers: {
+                            "Clerk-API-Version": "2025-04-10",
+                            "x-publishable-key": (window.Clerk && Clerk.publishableKey) || "",
+                        },
+                    }
+                );
+                const json = await res.json().catch(() => ({}));
+                const plans = Array.isArray(json.data) ? json.data : [];
+                return {
+                    ok: res.ok,
+                    status: res.status,
+                    planCount: plans.length,
+                    slugs: plans.map((p) => p.slug),
+                    names: plans.map((p) => p.name),
+                    errorCode: json.errors && json.errors[0] && json.errors[0].code,
+                };
+            } catch (err) {
+                return { ok: false, error: String(err && err.message || err) };
+            }
+        }
+
+        function logPricingMountAftermath(targetEl, label, diagnostics, plansInfo) {
             const snapshot = describePricingTarget(targetEl);
             console.log(`[PricingTable] ${label}`, snapshot);
             if (snapshot.found && snapshot.childElementCount === 0) {
-                console.warn(
-                    "[PricingTable] Container is still empty after mount. " +
-                    "Clerk PricingTable props do NOT take publishableKey or pricingTableId. " +
-                    "An empty table usually means: Billing not enabled, no User Plans, " +
-                    "or plans were created under Organization instead of User. " +
-                    "Check https://dashboard.clerk.com/last-active?path=billing/settings and " +
-                    "https://dashboard.clerk.com/last-active?path=billing/plans (User tab)."
-                );
+                console.warn("[PricingTable] Container still empty after mount.", {
+                    diagnostics,
+                    plansInfo,
+                    hint: diagnostics && diagnostics.wouldSilentNoop
+                        ? "clerk-js production silent no-op: environment.commerceSettings.billing.user/organization both disabled or environment missing."
+                        : "Mount passed the billing gate but still painted nothing — check Network for commerce/plans and UI chunk loads.",
+                });
+                showPricingEmptyState(targetEl, diagnostics || getClerkBillingDiagnostics(), plansInfo);
             }
         }
 
         function mountPricingTableInto(targetEl, highlightedPlan) {
+            const diagnostics = getClerkBillingDiagnostics();
             console.log("[PricingTable] mountPricingTableInto called", {
                 highlightedPlan,
                 hasTargetEl: !!targetEl,
@@ -854,6 +936,7 @@
                 clerkUserId: window.Clerk && Clerk.user ? Clerk.user.id : null,
                 clerkLoaded: !!(window.Clerk && Clerk.loaded),
             });
+            console.log("[PricingTable] billing diagnostics", diagnostics);
 
             if (!targetEl || !window.Clerk || typeof Clerk.mountPricingTable !== "function") {
                 const mountKeys = window.Clerk
@@ -863,11 +946,23 @@
                     targetSnapshot: describePricingTarget(targetEl),
                     hasClerk: !!window.Clerk,
                     hasMount: !!(window.Clerk && typeof Clerk.mountPricingTable === "function"),
-                    clerkVersion: window.Clerk && (Clerk.version || (Clerk.sdkMetadata && Clerk.sdkMetadata.version)) || null,
+                    clerkVersion: diagnostics.clerkVersion,
                     availableMountFns: mountKeys,
                     hint: "There is no loadPricingTable API. Need clerk-js@5+/@6 with mountPricingTable. Waiting on isReady will not help if the method is missing.",
                 });
                 return false;
+            }
+
+            if (diagnostics.wouldSilentNoop) {
+                console.error(
+                    "[PricingTable] clerk-js will silently no-op mountPricingTable in production.",
+                    {
+                        code: "cannot_render_billing_disabled",
+                        diagnostics,
+                        dashboard: "https://dashboard.clerk.com/last-active?path=billing/settings",
+                        note: "Even if Dashboard shows Billing on, Clerk.environment in THIS browser session must expose commerceSettings.billing.user.enabled === true.",
+                    }
+                );
             }
 
             console.log("[PricingTable] targetEl before clear:", describePricingTarget(targetEl));
@@ -914,9 +1009,12 @@
                 inlinePricingMounted = true;
                 pricingTableMounted = true;
 
-                // Clerk paints asynchronously — re-check shortly after
-                setTimeout(() => logPricingMountAftermath(targetEl, "DOM 500ms after mount"), 500);
-                setTimeout(() => logPricingMountAftermath(targetEl, "DOM 2000ms after mount"), 2000);
+                // Compare SDK gate vs live commerce plans API
+                fetchCommercePlansDiagnostics().then((plansInfo) => {
+                    console.log("[PricingTable] commerce/plans?payer_type=user", plansInfo);
+                    setTimeout(() => logPricingMountAftermath(targetEl, "DOM 500ms after mount", diagnostics, plansInfo), 500);
+                    setTimeout(() => logPricingMountAftermath(targetEl, "DOM 2000ms after mount", diagnostics, plansInfo), 2000);
+                });
                 return true;
             } catch (err) {
                 console.error("Clerk.mountPricingTable failed:", err);
@@ -1170,6 +1268,7 @@
                     sdkMetadata: Clerk.sdkMetadata || null,
                     hasMountPricingTable: typeof Clerk.mountPricingTable === "function",
                     hasUICtor: !!window.__internal_ClerkUICtor,
+                    billing: getClerkBillingDiagnostics(),
                 });
                 clerkReady = true;
 
