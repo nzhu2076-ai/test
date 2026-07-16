@@ -808,13 +808,68 @@
             syncUploadLockState();
         }
 
+        function describePricingTarget(targetEl) {
+            if (!targetEl) return { found: false };
+            const style = window.getComputedStyle(targetEl);
+            const sheet = document.getElementById("clerk-billing-sheet");
+            return {
+                found: true,
+                id: targetEl.id || "(no id)",
+                tagName: targetEl.tagName,
+                className: targetEl.className,
+                childElementCount: targetEl.childElementCount,
+                textContentLength: (targetEl.textContent || "").trim().length,
+                innerHTMLPreview: (targetEl.innerHTML || "").slice(0, 300),
+                offsetWidth: targetEl.offsetWidth,
+                offsetHeight: targetEl.offsetHeight,
+                display: style.display,
+                visibility: style.visibility,
+                sheetHidden: sheet ? sheet.classList.contains("hidden") : null,
+                sheetAriaHidden: sheet ? sheet.getAttribute("aria-hidden") : null,
+            };
+        }
+
+        function logPricingMountAftermath(targetEl, label) {
+            const snapshot = describePricingTarget(targetEl);
+            console.log(`[PricingTable] ${label}`, snapshot);
+            if (snapshot.found && snapshot.childElementCount === 0) {
+                console.warn(
+                    "[PricingTable] Container is still empty after mount. " +
+                    "Clerk PricingTable props do NOT take publishableKey or pricingTableId. " +
+                    "An empty table usually means: Billing not enabled, no User Plans, " +
+                    "or plans were created under Organization instead of User. " +
+                    "Check https://dashboard.clerk.com/last-active?path=billing/settings and " +
+                    "https://dashboard.clerk.com/last-active?path=billing/plans (User tab)."
+                );
+            }
+        }
+
         function mountPricingTableInto(targetEl, highlightedPlan) {
+            console.log("[PricingTable] mountPricingTableInto called", {
+                highlightedPlan,
+                hasTargetEl: !!targetEl,
+                targetElId: targetEl && targetEl.id,
+                hasClerk: !!window.Clerk,
+                hasMountFn: !!(window.Clerk && typeof Clerk.mountPricingTable === "function"),
+                clerkUserId: window.Clerk && Clerk.user ? Clerk.user.id : null,
+                clerkLoaded: !!(window.Clerk && Clerk.loaded),
+            });
+
             if (!targetEl || !window.Clerk || typeof Clerk.mountPricingTable !== "function") {
+                console.error("[PricingTable] cannot mount — missing target, Clerk, or mountPricingTable.", {
+                    targetSnapshot: describePricingTarget(targetEl),
+                    hasClerk: !!window.Clerk,
+                    hasMount: !!(window.Clerk && typeof Clerk.mountPricingTable === "function"),
+                });
                 return false;
             }
 
+            console.log("[PricingTable] targetEl before clear:", describePricingTarget(targetEl));
+
             if (inlinePricingMounted && typeof Clerk.unmountPricingTable === "function") {
-                try { Clerk.unmountPricingTable(targetEl); } catch (e) { /* ignore */ }
+                try { Clerk.unmountPricingTable(targetEl); } catch (e) {
+                    console.warn("[PricingTable] unmountPricingTable failed (continuing):", e);
+                }
             }
 
             targetEl.innerHTML = "";
@@ -834,16 +889,56 @@
                 props.highlightedPlan = highlightedPlan;
             }
 
-            Clerk.mountPricingTable(targetEl, props);
-            inlinePricingMounted = true;
-            pricingTableMounted = true;
-            return true;
+            // Explicitly confirm these are NOT PricingTable props (common confusion)
+            console.log("Mounting PricingTable with props:", props);
+            console.log("[PricingTable] props checklist", {
+                for: props.for,
+                highlightedPlan: props.highlightedPlan || null,
+                newSubscriptionRedirectUrl: props.newSubscriptionRedirectUrl,
+                hasAppearance: !!props.appearance,
+                publishableKeyInProps: Object.prototype.hasOwnProperty.call(props, "publishableKey"),
+                pricingTableIdInProps: Object.prototype.hasOwnProperty.call(props, "pricingTableId"),
+                note: "publishableKey is loaded via /api/clerk-config + Clerk script; pricingTableId does not exist in Clerk PricingTable API",
+            });
+
+            try {
+                Clerk.mountPricingTable(targetEl, props);
+                console.log("Clerk.mountPricingTable called.");
+                console.log("[PricingTable] targetEl immediately after mount:", describePricingTarget(targetEl));
+                inlinePricingMounted = true;
+                pricingTableMounted = true;
+
+                // Clerk paints asynchronously — re-check shortly after
+                setTimeout(() => logPricingMountAftermath(targetEl, "DOM 500ms after mount"), 500);
+                setTimeout(() => logPricingMountAftermath(targetEl, "DOM 2000ms after mount"), 2000);
+                return true;
+            } catch (err) {
+                console.error("Clerk.mountPricingTable failed:", err);
+                inlinePricingMounted = false;
+                pricingTableMounted = false;
+                return false;
+            }
         }
 
         function ensureInlinePricingTable(highlightedPlan) {
-            if (!clerkReady || !isSignedIn()) return;
-            const inlineRoot = document.getElementById('clerk-pricing-table-inline');
-            if (!inlineRoot) return;
+            console.log("[PricingTable] ensureInlinePricingTable", {
+                clerkReady,
+                signedIn: isSignedIn(),
+                highlightedPlan,
+            });
+            if (!clerkReady || !isSignedIn()) {
+                console.warn("[PricingTable] ensureInlinePricingTable bailed: clerkReady/signedIn", {
+                    clerkReady,
+                    signedIn: isSignedIn(),
+                });
+                return;
+            }
+            const inlineRoot = document.getElementById("clerk-pricing-table-inline");
+            console.log("[PricingTable] getElementById('clerk-pricing-table-inline') =>", describePricingTarget(inlineRoot));
+            if (!inlineRoot) {
+                console.error("[PricingTable] #clerk-pricing-table-inline not found in DOM");
+                return;
+            }
             mountPricingTableInto(inlineRoot, highlightedPlan);
         }
 
@@ -900,17 +995,27 @@
         }
 
         async function openPricingTable(highlightedPlan) {
+            console.log("[PricingTable] openPricingTable called", {
+                highlightedPlan,
+                clerkConfigured,
+                clerkReady,
+                signedIn: isSignedIn(),
+            });
+
             if (!clerkConfigured) {
+                console.error("[PricingTable] openPricingTable aborted: clerkConfigured=false");
                 triggerNotification("Clerk Billing is not configured. Set CLERK_PUBLISHABLE_KEY in Vercel.");
                 return;
             }
 
             if (!clerkReady) {
+                console.error("[PricingTable] openPricingTable aborted: clerkReady=false");
                 triggerNotification("Authentication is still loading. Please try again.");
                 return;
             }
 
             if (!isSignedIn()) {
+                console.warn("[PricingTable] openPricingTable: not signed in — prompting sign-in");
                 pendingOpenPricing = highlightedPlan || true;
                 triggerNotification("Sign in to view plans and checkout.");
                 await handleSignInClick();
@@ -918,6 +1023,7 @@
             }
 
             openBillingSheet();
+            console.log("[PricingTable] billing sheet opened", describePricingTarget(document.getElementById("clerk-pricing-table-inline")));
             ensureInlinePricingTable(typeof highlightedPlan === "string" ? highlightedPlan : undefined);
             triggerNotification("Select a plan and click Subscribe to open Stripe checkout.");
         }
