@@ -810,11 +810,18 @@
 
         function mountPricingTableInto(targetEl, highlightedPlan) {
             if (!targetEl || !window.Clerk || typeof Clerk.mountPricingTable !== "function") {
+                console.error("mountPricingTableInto: cannot mount — missing target, Clerk, or mountPricingTable.", {
+                    hasTarget: !!targetEl,
+                    hasClerk: !!window.Clerk,
+                    hasMount: !!(window.Clerk && typeof Clerk.mountPricingTable === "function"),
+                });
                 return false;
             }
 
             if (inlinePricingMounted && typeof Clerk.unmountPricingTable === "function") {
-                try { Clerk.unmountPricingTable(targetEl); } catch (e) { /* ignore */ }
+                try { Clerk.unmountPricingTable(targetEl); } catch (e) {
+                    console.warn("mountPricingTableInto: unmountPricingTable failed (continuing):", e);
+                }
             }
 
             targetEl.innerHTML = "";
@@ -834,10 +841,20 @@
                 props.highlightedPlan = highlightedPlan;
             }
 
-            Clerk.mountPricingTable(targetEl, props);
-            inlinePricingMounted = true;
-            pricingTableMounted = true;
-            return true;
+            console.log("Mounting PricingTable with props:", props);
+
+            try {
+                Clerk.mountPricingTable(targetEl, props);
+                console.log("Clerk.mountPricingTable called.");
+                inlinePricingMounted = true;
+                pricingTableMounted = true;
+                return true;
+            } catch (err) {
+                console.error("Clerk.mountPricingTable failed:", err);
+                inlinePricingMounted = false;
+                pricingTableMounted = false;
+                return false;
+            }
         }
 
         function ensureInlinePricingTable(highlightedPlan) {
