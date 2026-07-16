@@ -1,7 +1,11 @@
 /**
  * Expose Clerk publishable key to the frontend (safe to publish).
- * Set CLERK_PUBLISHABLE_KEY (or NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY) in Vercel.
+ * Uses the production publishable key committed below so deploys stay in sync
+ * even if a stale Vercel env var still points at an old pk_test key.
  */
+const CLERK_PUBLISHABLE_KEY =
+  "pk_live_Y2xlcmsuc2Nob2xhcnBpbG90Lm5ldCQ";
+
 module.exports = async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
@@ -16,11 +20,7 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const publishableKey =
-    process.env.CLERK_PUBLISHABLE_KEY ||
-    process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ||
-    process.env.VITE_CLERK_PUBLISHABLE_KEY ||
-    "";
+  const publishableKey = CLERK_PUBLISHABLE_KEY;
 
   return res.status(200).json({
     publishableKey,
